@@ -112,6 +112,67 @@
     box-shadow: 0 20px 40px -20px rgba(0,0,0,0.25);
     border-color: #0a0a0a;
   }
+  .teams-card {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .teams-card::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -32%;
+    width: 24%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    animation: teamsGlance 4s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .teams-logo-tile {
+    position: relative;
+    z-index: 2;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 14px 30px rgba(88,76,222,0.34), inset 0 0 0 1px rgba(255,255,255,0.65);
+    overflow: hidden;
+  }
+  .teams-logo-tile::after {
+    content: "";
+    position: absolute;
+    top: -45%;
+    bottom: -45%;
+    left: -42%;
+    width: 34%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+    transform: translateX(-130%) skewX(-18deg);
+    animation: teamsIconGlance 3.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .teams-logo {
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
+    display: block;
+  }
+  .teams-card > * {
+    position: relative;
+    z-index: 2;
+  }
+  @keyframes teamsGlance {
+    0%, 44% { opacity: 0; transform: translateX(-130%) skewX(-18deg); }
+    54% { opacity: 1; }
+    72%, 100% { opacity: 0; transform: translateX(640%) skewX(-18deg); }
+  }
+  @keyframes teamsIconGlance {
+    0%, 36% { opacity: 0; transform: translateX(-130%) skewX(-18deg); }
+    48% { opacity: 0.9; }
+    66%, 100% { opacity: 0; transform: translateX(300%) skewX(-18deg); }
+  }
 
   /* ---------- Sidebar nav ---------- */
   .nav-item {
@@ -161,6 +222,35 @@
   /* ---------- Insight icon bounce ---------- */
   .insight-icon { transition: transform 0.3s ease; }
   .insight-card:hover .insight-icon { transform: rotate(-8deg) scale(1.1); }
+  .trend-page { display: none; }
+  .trend-page.active { display: grid; animation: fadeUp 0.35s ease-out; }
+  .trend-arrow {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid #d4d4d4;
+    background: #fff;
+    color: #0a0a0a;
+    font-size: 1.4rem;
+    font-weight: 900;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .trend-arrow:hover {
+    transform: translateY(-1px);
+    background: #0a0a0a;
+    color: #fff;
+  }
+  .trend-page-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #d4d4d4;
+  }
+  .trend-page-dot.active { background: #0a0a0a; }
 
   /* ---------- Progress bar ---------- */
   .progress-bar {
@@ -180,7 +270,223 @@
   .fab {
     transition: all 0.3s ease;
   }
-  .fab:hover { transform: scale(1.1) rotate(90deg); }
+  .fab:hover { transform: scale(1.08); }
+  .chatbot-launcher {
+    border: 2px solid #0a0a0a;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .chatbot-launcher img {
+    width: 34px;
+    height: 34px;
+    object-fit: cover;
+    border-radius: 999px;
+    filter: grayscale(1) contrast(1.12);
+  }
+  .chatbot-launcher::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 999px;
+    border: 2px solid rgba(0,0,0,0.16);
+    animation: chatbotPulse 2.4s ease-in-out infinite;
+  }
+  .chatbot-launcher::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    bottom: -40%;
+    left: -48%;
+    width: 38%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+    transform: translateX(-140%) skewX(-18deg);
+    animation: chatbotGlance 3.2s ease-in-out infinite;
+    z-index: 2;
+    pointer-events: none;
+  }
+  @keyframes chatbotPulse {
+    0%, 100% { transform: scale(1); opacity: 0.25; }
+    50% { transform: scale(1.18); opacity: 0; }
+  }
+  @keyframes chatbotGlance {
+    0%, 36% { opacity: 0; transform: translateX(-140%) skewX(-18deg); }
+    46% { opacity: 0.92; }
+    62%, 100% { opacity: 0; transform: translateX(260%) skewX(-18deg); }
+  }
+  .chatbot-reminder {
+    position: fixed;
+    right: 92px;
+    bottom: 31px;
+    z-index: 49;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: min(260px, calc(100vw - 116px));
+    padding: 10px 13px;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.94);
+    color: #0a0a0a;
+    box-shadow: 0 16px 34px rgba(0,0,0,0.14);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    animation: chatbotReminderFloat 3.6s ease-in-out infinite;
+    transition: opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease;
+  }
+  .chatbot-reminder.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(8px) scale(0.96);
+  }
+  .chatbot-reminder::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    right: -5px;
+    background: inherit;
+    border-top: 1px solid #d4d4d4;
+    border-right: 1px solid #d4d4d4;
+    transform: rotate(45deg);
+  }
+  .chatbot-reminder-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.14);
+    flex: 0 0 auto;
+  }
+  @keyframes chatbotReminderFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .chatbot-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 96px;
+    width: min(380px, calc(100vw - 32px));
+    max-height: min(640px, calc(100vh - 128px));
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #d4d4d4;
+    border-radius: 18px;
+    box-shadow: 0 28px 70px rgba(0,0,0,0.22);
+    overflow: hidden;
+    z-index: 60;
+  }
+  .chatbot-panel.open { display: flex; animation: modalIn 220ms ease-out; }
+  .chatbot-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #0a0a0a;
+    color: #fff;
+  }
+  .chatbot-header img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #fff;
+  }
+  .chatbot-messages {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 260px;
+  }
+  .chatbot-message {
+    max-width: 86%;
+    border-radius: 16px;
+    padding: 10px 12px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    white-space: pre-line;
+  }
+  .chatbot-message.bot {
+    align-self: flex-start;
+    background: #f4f4f5;
+    color: #18181b;
+    border-bottom-left-radius: 5px;
+  }
+  .chatbot-message.user {
+    align-self: flex-end;
+    background: #0a0a0a;
+    color: #fff;
+    border-bottom-right-radius: 5px;
+  }
+  .chatbot-section-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    border: 1px solid #0a0a0a;
+    border-radius: 999px;
+    background: #0a0a0a;
+    color: #fff;
+    padding: 7px 10px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .chatbot-section-btn:hover {
+    transform: translateY(-1px);
+    background: #262626;
+  }
+  .chatbot-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 16px 14px;
+  }
+  .chatbot-suggestion {
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    background: #fff;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  .chatbot-suggestion:hover {
+    background: #0a0a0a;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+  .chatbot-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #e5e5e5;
+    background: #fafafa;
+  }
+  .chatbot-input {
+    flex: 1;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .chatbot-input:focus {
+    border-color: #0a0a0a;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+  }
+  .chatbot-send {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: #0a0a0a;
+    color: #fff;
+    font-weight: 900;
+  }
 
   /* ---------- Topbar shadow on scroll ---------- */
   .topbar.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
@@ -373,14 +679,14 @@
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
   }
   .calendar-day {
-    min-height: 74px;
+    min-height: 58px;
     border: 1px solid #e5e5e5;
-    border-radius: 14px;
+    border-radius: 12px;
     background: #fff;
-    padding: 8px;
+    padding: 7px;
     transition: border-color 0.2s ease, transform 0.2s ease;
   }
   .calendar-day:hover {
@@ -394,6 +700,14 @@
     background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%);
   }
   .calendar-day.upcoming .calendar-event-dot { background: #16a34a; }
+  .calendar-day.past {
+    border-color: #ef4444;
+    background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
+  }
+  .calendar-day.past .calendar-event-dot { background: #dc2626; }
+  .calendar-day.holiday {
+    box-shadow: inset 0 0 0 1px rgba(10,10,10,0.05);
+  }
   .calendar-event-dot {
     width: 6px;
     height: 6px;
@@ -401,9 +715,69 @@
     background: #0a0a0a;
     display: inline-block;
   }
+  .calendar-event-title {
+    font-size: 9px;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .calendar-side-panel {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+  }
+  .calendar-add-panel {
+    padding: 14px;
+  }
+  .calendar-add-panel .field {
+    padding-top: 9px;
+    padding-bottom: 9px;
+    min-height: 40px;
+  }
+  .calendar-event-list {
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .calendar-event-title.upcoming { color: #15803d; font-weight: 700; }
+  .calendar-event-title.past { color: #b91c1c; font-weight: 700; }
+  .calendar-event-title.holiday::before {
+    content: "PH ";
+    font-weight: 900;
+  }
   .event-card.upcoming {
     border-color: #22c55e;
     background: #f0fdf4;
+  }
+  .event-card.compact {
+    border-radius: 14px;
+    padding: 10px;
+  }
+  .event-card .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .event-card.past {
+    border-color: #ef4444;
+    background: #fef2f2;
+  }
+  .event-card.holiday {
+    box-shadow: inset 0 0 0 1px rgba(10,10,10,0.04);
+  }
+  .event-source-pill {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    background: #0a0a0a;
+    color: #fff;
+    margin-top: 8px;
   }
   .feedback-preview {
     aspect-ratio: 4 / 3;
@@ -662,7 +1036,12 @@
     .brand-lockup { animation: none; }
     .brand-lockup.logo-animate,
     .brand-lockup:hover::after,
-    .brand-lockup.logo-animate::after {
+    .brand-lockup.logo-animate::after,
+    .chatbot-launcher::after,
+    .chatbot-launcher::before,
+    .chatbot-reminder,
+    .teams-card::after,
+    .teams-logo-tile::after {
       animation: none;
     }
     .reminder-panel,
@@ -735,7 +1114,7 @@
     </div>
 
     <div class="p-4 border-t border-gray-200">
-      <div class="stock-glance-card bg-black text-white rounded-2xl p-4">
+      <div id="micronStockCard" class="stock-glance-card bg-black text-white rounded-2xl p-4">
         <div class="flex items-start justify-between gap-3">
           <div>
             <p class="text-xs text-gray-300 mb-1">Micron Stock Price</p>
@@ -813,10 +1192,10 @@
           </div>
 
           <!-- KPI Total Threads -->
-          <div class="col-span-12 md:col-span-6 card bg-black text-white rounded-3xl p-6">
+          <div class="teams-card col-span-12 md:col-span-6 card bg-black text-white rounded-3xl p-6">
             <div class="flex items-center justify-between mb-4">
-              <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center">
-                <svg width="22" height="22" fill="none" stroke="black" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div class="teams-logo-tile">
+                <img class="teams-logo" src="assets/microsoft-teams-logo.png" alt="Microsoft Teams">
               </div>
               <span class="text-xs bg-white/10 px-3 py-1 rounded-full font-medium">Microsoft Teams</span>
             </div>
@@ -957,6 +1336,12 @@
               <p class="text-gray-500 text-sm mt-1">Overview of total mentions in Microsoft Teams by issue type and shift</p>
             </div>
             <div class="flex items-center gap-3">
+              <button id="trendPrevBtn" class="trend-arrow" type="button" aria-label="Previous trend view">‹</button>
+              <div class="flex items-center gap-2" aria-hidden="true">
+                <span class="trend-page-dot active" data-trend-dot="0"></span>
+                <span class="trend-page-dot" data-trend-dot="1"></span>
+              </div>
+              <button id="trendNextBtn" class="trend-arrow" type="button" aria-label="Next trend view">›</button>
               <div class="flex gap-2" id="shiftToggles">
                 <button class="shift-toggle px-3 py-1.5 rounded-full text-xs font-semibold bg-black text-white" data-shift="A">Shift A</button>
                 <button class="shift-toggle px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-200 text-black" data-shift="B">Shift B</button>
@@ -966,7 +1351,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-12 gap-6">
+          <div id="issueTrendPage" class="trend-page active grid-cols-12 gap-6">
             <!-- Chart -->
             <div class="col-span-12 lg:col-span-8 bg-gray-50 rounded-2xl p-5">
               <div class="flex items-center justify-between mb-3">
@@ -986,6 +1371,25 @@
                 <span class="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Key Insights</span>
               </div>
               <div id="insightsList" class="space-y-3"></div>
+            </div>
+          </div>
+
+          <div id="toolTrendPage" class="trend-page grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-8 bg-gray-50 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="bg-black text-white text-xs font-bold px-4 py-1 rounded-full">Tool Trigger Frequency</span>
+                <span class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded-full">Same tool trigger count</span>
+              </div>
+              <div style="height: 340px;">
+                <canvas id="toolTriggerChart"></canvas>
+              </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-4 space-y-3">
+              <div class="text-center mb-2">
+                <span class="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Tool Insights</span>
+              </div>
+              <div id="toolTriggerInsights" class="space-y-3"></div>
             </div>
           </div>
 
@@ -1013,12 +1417,12 @@
 
       <!-- ===== CALENDAR ===== -->
       <section id="calendarSection" class="reveal">
-        <div class="card bg-white border border-gray-200 rounded-3xl p-8">
-          <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+        <div class="card bg-white border border-gray-200 rounded-3xl p-5">
+          <div class="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>
               <span class="inline-block bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Calendar</span>
-              <h3 id="calendarMonthLabel" class="text-3xl font-bold mt-3">Schedule</h3>
-              <p id="upcomingEventSummary" class="text-sm text-green-700 font-semibold mt-2"></p>
+              <h3 id="calendarMonthLabel" class="text-2xl font-bold mt-2">Schedule</h3>
+              <p id="upcomingEventSummary" class="text-xs text-green-700 font-semibold mt-1"></p>
             </div>
             <div class="flex gap-2">
               <button id="toggleCalendarBtn" class="action-btn secondary" type="button">Minimize</button>
@@ -1027,9 +1431,9 @@
               <button id="nextMonthBtn" class="action-btn secondary" type="button">Next</button>
             </div>
           </div>
-          <div id="calendarBody" class="collapsible-body grid grid-cols-1 lg:grid-cols-12 gap-6" style="max-height: 900px;">
+          <div id="calendarBody" class="collapsible-body grid grid-cols-1 lg:grid-cols-12 gap-4" style="max-height: 720px;">
             <div class="lg:col-span-8">
-              <div class="calendar-grid mb-3">
+              <div class="calendar-grid mb-2">
                 <div class="text-xs font-bold uppercase text-gray-400">Sun</div>
                 <div class="text-xs font-bold uppercase text-gray-400">Mon</div>
                 <div class="text-xs font-bold uppercase text-gray-400">Tue</div>
@@ -1040,17 +1444,23 @@
               </div>
               <div id="calendarGrid" class="calendar-grid"></div>
             </div>
-            <div class="lg:col-span-4">
-              <div class="bg-gray-50 rounded-2xl p-5">
-                <h4 class="font-bold text-sm uppercase tracking-wider mb-4">Add Event</h4>
-                <div class="space-y-3">
+            <div class="lg:col-span-4 calendar-side-panel">
+              <div class="bg-gray-50 rounded-2xl calendar-add-panel">
+                <h4 class="font-bold text-xs uppercase tracking-wider mb-3">Add Event</h4>
+                <div class="space-y-2">
                   <input id="eventDateInput" class="field" type="date">
                   <input id="eventTitleInput" class="field" type="text" placeholder="Event title">
-                  <textarea id="eventDetailInput" class="field min-h-24 resize-none" placeholder="Event details"></textarea>
+                  <textarea id="eventDetailInput" class="field min-h-16 resize-none" placeholder="Event details"></textarea>
                   <button id="addEventBtn" class="action-btn primary w-full" type="button">Save Event</button>
                 </div>
               </div>
-              <div id="eventList" class="mt-4 space-y-3"></div>
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-bold text-xs uppercase tracking-wider">Upcoming Events</h4>
+                  <span id="eventListCount" class="text-[10px] font-bold text-gray-400"></span>
+                </div>
+                <div id="eventList" class="calendar-event-list space-y-2"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1222,9 +1632,34 @@
   </div>
 </div>
 
-<!-- Floating action -->
-<button class="fab fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full flex items-center justify-center shadow-2xl z-50">
-  <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+<!-- Dashboard chatbot -->
+<section id="chatbotPanel" class="chatbot-panel" aria-live="polite" aria-label="Dashboard chatbot support">
+  <div class="chatbot-header">
+    <img src="assets/chatbot-icon.jpg" alt="" aria-hidden="true">
+    <div class="flex-1">
+      <p class="text-xs uppercase tracking-wider text-gray-300">Post E Support</p>
+      <h3 class="font-bold leading-tight">Dashboard Chatbot</h3>
+    </div>
+    <button id="closeChatbotBtn" class="panel-toggle !border-white/40 !text-white" type="button" aria-label="Close chatbot">x</button>
+  </div>
+  <div id="chatbotMessages" class="chatbot-messages"></div>
+  <div class="chatbot-suggestions" aria-label="Suggested questions">
+    <button class="chatbot-suggestion" type="button" data-chat-question="What is the current dashboard summary?">Current summary</button>
+    <button class="chatbot-suggestion" type="button" data-chat-question="Which issue contributor is highest?">Top contributor</button>
+    <button class="chatbot-suggestion" type="button" data-chat-question="What is the on hold lots and WIP status?">On hold status</button>
+  </div>
+  <form id="chatbotForm" class="chatbot-form">
+    <input id="chatbotInput" class="chatbot-input" type="text" placeholder="Ask about QDR, WIP, cases, feedback..." autocomplete="off">
+    <button class="chatbot-send" type="submit" aria-label="Send chatbot question">↑</button>
+  </form>
+</section>
+
+<button id="chatbotLauncher" class="fab chatbot-launcher fixed bottom-6 right-6 w-14 h-14 bg-white text-black rounded-full flex items-center justify-center shadow-2xl z-50" type="button" aria-label="Open dashboard chatbot">
+  <img src="assets/chatbot-icon.jpg" alt="">
+</button>
+<button id="chatbotReminder" class="chatbot-reminder" type="button">
+  <span class="chatbot-reminder-dot" aria-hidden="true"></span>
+  <span>Need support? Click Chatbot now!</span>
 </button>
 
 <!-- Feedback detail viewer -->
@@ -1339,7 +1774,20 @@ let onholdOwners = [
   { owner: 'Production', lots: 25, wip: 4 },
 ];
 
-let reminders = JSON.parse(localStorage.getItem('postEReminders') || 'null') || [
+function readStoredJson(key, fallback, validator = null) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return validator && !validator(parsed) ? fallback : parsed;
+  } catch (error) {
+    console.warn(`Reset invalid saved dashboard data for ${key}`, error);
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+
+let reminders = readStoredJson('postEReminders', null, Array.isArray) || [
   {
     title: 'CAT Test Building Team Q2',
     message: 'Shift C & D -> 25 June 2026\nShift A & B -> 29 June 2026\nOffice Hours & Permanent Day -> To be confirmed by Supervisors'
@@ -1353,10 +1801,75 @@ let reminderIndex = 0;
 let editingReminderIndex = null;
 
 let calendarCursor = new Date();
-let calendarEvents = JSON.parse(localStorage.getItem('postECalendarEvents') || '[]');
-let feedbackIssues = JSON.parse(localStorage.getItem('postEFeedbackIssues') || '[]');
+let calendarEvents = readStoredJson('postECalendarEvents', [], Array.isArray);
+const malaysiaPublicHolidays = [
+  { date: '2026-01-01', title: "New Year's Day", detail: 'National except Johor, Kedah, Kelantan, Perlis & Terengganu' },
+  { date: '2026-01-14', title: "YDPB Negeri Sembilan's Birthday", detail: 'Negeri Sembilan' },
+  { date: '2026-01-17', title: 'Israk and Mikraj', detail: 'Kedah, Negeri Sembilan, Perlis & Terengganu' },
+  { date: '2026-01-18', title: 'Israk and Mikraj Holiday', detail: 'Terengganu' },
+  { date: '2026-02-01', title: 'Thaipusam', detail: 'Johor, Kuala Lumpur, Negeri Sembilan, Penang, Perak, Putrajaya & Selangor' },
+  { date: '2026-02-01', title: 'Federal Territory Day', detail: 'Kuala Lumpur, Labuan & Putrajaya' },
+  { date: '2026-02-02', title: 'Thaipusam Holiday', detail: 'Johor, Kuala Lumpur, Negeri Sembilan, Penang, Perak, Putrajaya & Selangor' },
+  { date: '2026-02-03', title: 'Federal Territory Day Holiday', detail: 'Kuala Lumpur, Labuan & Putrajaya' },
+  { date: '2026-02-17', title: 'Chinese New Year', detail: 'National' },
+  { date: '2026-02-18', title: 'Chinese New Year Holiday', detail: 'National' },
+  { date: '2026-02-19', title: 'Awal Ramadan', detail: 'Johor & Kedah' },
+  { date: '2026-02-20', title: 'Independence Declaration Day', detail: 'Melaka' },
+  { date: '2026-03-04', title: 'Installation of Sultan Terengganu', detail: 'Terengganu' },
+  { date: '2026-03-07', title: "Nuzul Al-Quran", detail: 'National except Johor, Kedah, Melaka, Negeri Sembilan, Sabah & Sarawak' },
+  { date: '2026-03-08', title: "Nuzul Al-Quran Holiday", detail: 'Kelantan & Terengganu' },
+  { date: '2026-03-20', title: 'Hari Raya Aidilfitri Holiday', detail: 'National' },
+  { date: '2026-03-21', title: 'Hari Raya Aidilfitri', detail: 'National' },
+  { date: '2026-03-22', title: 'Hari Raya Aidilfitri Holiday', detail: 'National' },
+  { date: '2026-03-23', title: "Sultan of Johor's Birthday", detail: 'Johor' },
+  { date: '2026-03-23', title: 'Hari Raya Aidilfitri Holiday', detail: 'National except Kedah' },
+  { date: '2026-03-24', title: 'Hari Raya Aidilfitri Holiday', detail: 'Johor' },
+  { date: '2026-03-30', title: "Sabah Governor's Birthday", detail: 'Sabah' },
+  { date: '2026-04-03', title: 'Good Friday', detail: 'Sabah & Sarawak' },
+  { date: '2026-04-26', title: "Sultan of Terengganu's Birthday", detail: 'Terengganu' },
+  { date: '2026-05-01', title: 'Labour Day', detail: 'National' },
+  { date: '2026-05-03', title: 'Labour Day Holiday', detail: 'Kedah' },
+  { date: '2026-05-17', title: "Raja Perlis' Birthday", detail: 'Perlis' },
+  { date: '2026-05-18', title: "Raja Perlis' Birthday Holiday", detail: 'Perlis' },
+  { date: '2026-05-22', title: 'Hari Hol Pahang', detail: 'Pahang' },
+  { date: '2026-05-26', title: 'Arafat Day', detail: 'Kelantan & Terengganu' },
+  { date: '2026-05-27', title: 'Hari Raya Haji', detail: 'National' },
+  { date: '2026-05-28', title: 'Hari Raya Haji Holiday', detail: 'Kedah, Kelantan, Perlis & Terengganu' },
+  { date: '2026-05-30', title: 'Harvest Festival', detail: 'Labuan & Sabah' },
+  { date: '2026-05-31', title: 'Wesak Day', detail: 'National' },
+  { date: '2026-05-31', title: 'Harvest Festival Holiday', detail: 'Labuan & Sabah' },
+  { date: '2026-06-01', title: 'Hari Gawai', detail: 'Sarawak' },
+  { date: '2026-06-01', title: "Agong's Birthday", detail: 'National' },
+  { date: '2026-06-02', title: 'Hari Gawai Holiday', detail: 'Sarawak' },
+  { date: '2026-06-02', title: 'Wesak Day Holiday', detail: 'National except Kedah, Kelantan, Sarawak & Terengganu' },
+  { date: '2026-06-03', title: 'Harvest Festival Holiday', detail: 'Labuan & Sabah' },
+  { date: '2026-06-03', title: 'Wesak Day Holiday', detail: 'Sarawak' },
+  { date: '2026-06-04', title: 'Hari Gawai Holiday', detail: 'Sarawak' },
+  { date: '2026-06-17', title: 'Awal Muharram', detail: 'National' },
+  { date: '2026-06-21', title: "Sultan of Kedah's Birthday", detail: 'Kedah' },
+  { date: '2026-07-07', title: 'Georgetown World Heritage City Day', detail: 'Penang' },
+  { date: '2026-07-11', title: "Penang Governor's Birthday", detail: 'Penang' },
+  { date: '2026-07-21', title: 'Hari Hol Almarhum Sultan Iskandar', detail: 'Johor' },
+  { date: '2026-07-22', title: 'Sarawak Day', detail: 'Sarawak' },
+  { date: '2026-07-31', title: "Sultan of Pahang's Birthday", detail: 'Pahang' },
+  { date: '2026-08-24', title: "Melaka Governor's Birthday", detail: 'Melaka' },
+  { date: '2026-08-25', title: "Prophet Muhammad's Birthday", detail: 'National' },
+  { date: '2026-08-31', title: 'Merdeka Day', detail: 'National' },
+  { date: '2026-09-16', title: 'Malaysia Day', detail: 'National' },
+  { date: '2026-09-29', title: "Sultan of Kelantan's Birthday", detail: 'Kelantan' },
+  { date: '2026-09-30', title: "Sultan of Kelantan's Birthday Holiday", detail: 'Kelantan' },
+  { date: '2026-10-10', title: "Sarawak Governor's Birthday", detail: 'Sarawak' },
+  { date: '2026-11-06', title: "Sultan of Perak's Birthday", detail: 'Perak' },
+  { date: '2026-11-08', title: 'Deepavali', detail: 'National except Sarawak' },
+  { date: '2026-11-09', title: 'Deepavali Holiday', detail: 'National except Kedah, Kelantan, Sarawak & Terengganu' },
+  { date: '2026-12-11', title: "Sultan of Selangor's Birthday", detail: 'Selangor' },
+  { date: '2026-12-24', title: 'Christmas Eve', detail: 'Sabah' },
+  { date: '2026-12-25', title: 'Christmas Day', detail: 'National' },
+  { date: '2026-12-27', title: 'Christmas Holiday', detail: 'Kedah' },
+];
+let feedbackIssues = readStoredJson('postEFeedbackIssues', [], Array.isArray);
 let feedbackImageDraft = [];
-let caseMedia = JSON.parse(localStorage.getItem('postECaseMedia') || '{}');
+let caseMedia = readStoredJson('postECaseMedia', {}, value => value && typeof value === 'object' && !Array.isArray(value));
 let activeCaseId = null;
 
 function createId() {
@@ -1624,20 +2137,24 @@ function setDataStatus(text) {
 }
 
 /* ---------- REVEAL ON SCROLL ---------- */
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      // animate KPIs
-      e.target.querySelectorAll('[data-target]').forEach(animateCount);
-      // animate progress bars
-      e.target.querySelectorAll('.progress-fill[data-width]').forEach(el => {
-        setTimeout(() => el.style.width = el.dataset.width, 300);
-      });
-    }
+function revealSection(el) {
+  el.classList.add('visible');
+  el.querySelectorAll('[data-target]').forEach(animateCount);
+  el.querySelectorAll('.progress-fill[data-width]').forEach(progressEl => {
+    setTimeout(() => progressEl.style.width = progressEl.dataset.width, 300);
   });
-}, { threshold: 0.15 });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+if ('IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) revealSection(entry.target);
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+} else {
+  document.querySelectorAll('.reveal').forEach(revealSection);
+}
 
 /* ---------- TOPBAR SHADOW ---------- */
 const topbar = document.querySelector('.topbar');
@@ -1774,6 +2291,7 @@ function applyIssueRows(rows) {
   if (totalMentions > 0) updateDashboardState({ threads: totalMentions });
   buildInsightsFromTrend();
   renderContributors();
+  renderToolTriggerTrend();
   renderInsights();
   refreshTrendChart();
   return true;
@@ -1836,6 +2354,25 @@ function applyRowsFromSheet(rows, sheetName = '') {
   const first = rows[0] || {};
   const firstKeys = Object.keys(first).map(normalizeKey).join('|');
 
+  if (sheet.includes('feedback') || sheet.includes('evidence') || (firstKeys.includes('issue') && firstKeys.includes('triggeredtool'))) {
+    const imported = rows.map(row => ({
+      id: createId(),
+      issue: String(rowValue(row, ['issue', 'issue title', 'feedback issue']) || '').trim(),
+      tool: String(rowValue(row, ['tool', 'triggered tool', 'triggeredtool']) || '').trim(),
+      shift: String(rowValue(row, ['shift']) || '').trim(),
+      date: normalizeDateValue(rowValue(row, ['date'])),
+      notes: String(rowValue(row, ['notes', 'improvement notes', 'details']) || '').trim(),
+      images: parseImageList(rowValue(row, ['image', 'images', 'photo', 'photos', 'screenshot', 'screenshots', 'email screenshot'])),
+    })).filter(item => item.issue || item.tool || item.notes);
+    if (imported.length) {
+      feedbackIssues = imported;
+      saveFeedbackIssues();
+      renderFeedbackIssues();
+      renderToolTriggerTrend();
+    }
+    return;
+  }
+
   if (sheet.includes('issue') || sheet.includes('totalissue') || (firstKeys.includes('issue') && (firstKeys.includes('shifta') || firstKeys.includes('totalissues')))) {
     if (applyIssueRows(rows)) return;
   }
@@ -1887,24 +2424,7 @@ function applyRowsFromSheet(rows, sheetName = '') {
     if (imported.length) {
       contributors = imported;
       renderContributors();
-    }
-    return;
-  }
-
-  if (sheet.includes('feedback') || (firstKeys.includes('issue') && firstKeys.includes('triggeredtool'))) {
-    const imported = rows.map(row => ({
-      id: createId(),
-      issue: String(rowValue(row, ['issue', 'issue title', 'feedback issue']) || '').trim(),
-      tool: String(rowValue(row, ['tool', 'triggered tool', 'triggeredtool']) || '').trim(),
-      shift: String(rowValue(row, ['shift']) || '').trim(),
-      date: normalizeDateValue(rowValue(row, ['date'])),
-      notes: String(rowValue(row, ['notes', 'improvement notes', 'details']) || '').trim(),
-      images: parseImageList(rowValue(row, ['image', 'images', 'photo', 'photos', 'screenshot', 'screenshots', 'email screenshot'])),
-    })).filter(item => item.issue || item.tool || item.notes);
-    if (imported.length) {
-      feedbackIssues = imported;
-      saveFeedbackIssues();
-      renderFeedbackIssues();
+      renderToolTriggerTrend();
     }
     return;
   }
@@ -2036,7 +2556,7 @@ function downloadCsv() {
     ['Summary','Onhold Increase/Reduce',appState.onholdCurrent - appState.onholdPrevious,'Current - Previous'],
     ...contributors.map(c => ['Contributor', c.issue, c.tool, c.count]),
     ...reminders.map(r => ['Reminder', r.title, r.message, '']),
-    ...calendarEvents.map(e => ['Calendar', e.date, e.title, e.detail]),
+    ...getCalendarEvents().map(e => ['Calendar', e.date, e.title, e.detail]),
     ...feedbackIssues.map(f => ['Feedback', f.issue, f.tool, `${f.shift} | ${f.date} | ${f.notes}`]),
     ...onholdOwners.map(o => ['Onhold Owner', o.owner, o.lots, formatOnholdWip(o.wip)]),
   ];
@@ -2112,13 +2632,16 @@ document.getElementById('closeOnholdModalBtn').addEventListener('click', closeOn
 document.getElementById('onholdModalBackdrop').addEventListener('click', event => {
   if (event.target.id === 'onholdModalBackdrop') closeOnholdDetails();
 });
-document.getElementById('excelInput').addEventListener('change', event => importExcelFile(event.target.files[0]));
+document.getElementById('excelInput').addEventListener('change', event => {
+  importExcelFile(event.target.files[0]);
+  event.target.value = '';
+});
 document.getElementById('connectExcelBtn').addEventListener('click', () => connectExcelFile().catch(() => setDataStatus('Excel connection cancelled')));
 document.getElementById('refreshExcelBtn').addEventListener('click', () => refreshExcelFile().catch(() => setDataStatus('Excel refresh failed')));
 document.getElementById('downloadTemplateBtn').addEventListener('click', () => {
   const a = document.createElement('a');
-  a.href = 'Post E Dashboard Data Template Onhold Owners.xlsx';
-  a.download = 'Post E Dashboard Data Template Onhold Owners.xlsx';
+  a.href = 'Post E Dashboard Data Template.xlsx';
+  a.download = 'Post E Dashboard Data Template.xlsx';
   a.click();
 });
 document.getElementById('exportCsvBtn').addEventListener('click', downloadCsv);
@@ -2232,6 +2755,28 @@ function saveCalendarEvents() {
   localStorage.setItem('postECalendarEvents', JSON.stringify(calendarEvents));
 }
 
+function getCalendarEvents() {
+  const holidays = malaysiaPublicHolidays.map((eventItem, index) => ({
+    ...eventItem,
+    detail: `Public holiday: ${eventItem.detail}`,
+    holiday: true,
+    source: 'Malaysia Public Holiday',
+    sourceUrl: 'https://publicholidays.com.my/',
+    id: `holiday-${eventItem.date}-${index}`,
+  }));
+  const customEvents = calendarEvents.map((eventItem, index) => ({
+    ...eventItem,
+    holiday: false,
+    source: 'Dashboard Event',
+    customIndex: index,
+  }));
+  return [...holidays, ...customEvents];
+}
+
+function calendarEventTone(eventItem, todayKey) {
+  return eventItem.date >= todayKey ? 'upcoming' : 'past';
+}
+
 function dateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -2246,7 +2791,8 @@ function renderCalendar() {
   const year = calendarCursor.getFullYear();
   const month = calendarCursor.getMonth();
   const todayKey = dateKey(new Date());
-  const upcomingEvents = calendarEvents
+  const allCalendarEvents = getCalendarEvents();
+  const upcomingEvents = allCalendarEvents
     .filter(event => event.date >= todayKey)
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -2260,17 +2806,19 @@ function renderCalendar() {
     const day = new Date(start);
     day.setDate(start.getDate() + i);
     const key = dateKey(day);
-    const dayEvents = calendarEvents.filter(event => event.date === key);
+    const dayEvents = allCalendarEvents.filter(event => event.date === key);
     const hasUpcomingEvent = dayEvents.some(event => event.date >= todayKey);
+    const hasPastEvent = dayEvents.some(event => event.date < todayKey);
+    const hasHoliday = dayEvents.some(event => event.holiday);
     const div = document.createElement('button');
     div.type = 'button';
-    div.className = `calendar-day text-left ${day.getMonth() === month ? '' : 'muted'} ${key === todayKey ? 'today' : ''} ${hasUpcomingEvent ? 'upcoming' : ''}`;
+    div.className = `calendar-day text-left ${day.getMonth() === month ? '' : 'muted'} ${key === todayKey ? 'today' : ''} ${hasUpcomingEvent ? 'upcoming' : ''} ${hasPastEvent ? 'past' : ''} ${hasHoliday ? 'holiday' : ''}`;
     div.innerHTML = `
       <div class="flex items-center justify-between">
         <span class="text-sm font-bold">${day.getDate()}</span>
         ${dayEvents.length ? '<span class="calendar-event-dot"></span>' : ''}
       </div>
-      <div class="mt-2 space-y-1">${dayEvents.slice(0, 2).map(event => `<p class="text-[10px] truncate ${event.date >= todayKey ? 'text-green-700 font-semibold' : ''}">${escapeHtml(event.title)}</p>`).join('')}</div>`;
+      <div class="mt-2 space-y-1">${dayEvents.slice(0, 2).map(event => `<p class="calendar-event-title ${calendarEventTone(event, todayKey)} ${event.holiday ? 'holiday' : ''}">${escapeHtml(event.title)}</p>`).join('')}</div>`;
     div.addEventListener('click', () => { document.getElementById('eventDateInput').value = key; });
     grid.appendChild(div);
   }
@@ -2279,19 +2827,29 @@ function renderCalendar() {
 
 function renderEventList() {
   const list = document.getElementById('eventList');
+  const count = document.getElementById('eventListCount');
+  const todayKey = dateKey(new Date());
   list.innerHTML = '';
-  calendarEvents
+  const allUpcomingItems = getCalendarEvents()
     .slice()
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .forEach((eventItem, index) => {
+    .filter(eventItem => eventItem.date >= todayKey)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
+  const upcomingItems = allUpcomingItems.slice(0, 8);
+  if (count) count.textContent = `${upcomingItems.length}/${allUpcomingItems.length} shown`;
+  if (!upcomingItems.length) {
+    list.innerHTML = '<div class="rounded-2xl bg-gray-50 p-4 text-xs font-semibold text-gray-500">No upcoming events.</div>';
+    return;
+  }
+  upcomingItems
+    .forEach(eventItem => {
       const div = document.createElement('div');
-      const isUpcoming = eventItem.date >= dateKey(new Date());
-      div.className = `event-card border border-gray-200 rounded-2xl p-3 bg-white ${isUpcoming ? 'upcoming' : ''}`;
+      const tone = calendarEventTone(eventItem, todayKey);
+      div.className = `event-card compact border border-gray-200 bg-white ${tone} ${eventItem.holiday ? 'holiday' : ''}`;
       div.innerHTML = `
         <p class="text-xs font-bold text-gray-500">${escapeHtml(eventItem.date)}</p>
         <p class="font-bold text-sm mt-1">${escapeHtml(eventItem.title)}</p>
-        <p class="text-xs text-gray-600 mt-1">${escapeHtml(eventItem.detail || '')}</p>
-        <button class="action-btn secondary !py-1 !px-3 mt-3" data-event-index="${index}" type="button">Delete</button>`;
+        <p class="text-[11px] text-gray-600 mt-1 line-clamp-2">${escapeHtml(eventItem.detail || '')}</p>
+        ${eventItem.holiday ? '<span class="event-source-pill">Public Holiday</span>' : `<button class="action-btn secondary !py-1 !px-3 mt-3" data-event-index="${eventItem.customIndex}" type="button">Delete</button>`}`;
       list.appendChild(div);
     });
 }
@@ -2316,9 +2874,8 @@ document.getElementById('addEventBtn').addEventListener('click', () => {
 document.getElementById('eventList').addEventListener('click', event => {
   const button = event.target.closest('button[data-event-index]');
   if (!button) return;
-  const sorted = calendarEvents.slice().sort((a, b) => a.date.localeCompare(b.date));
-  const item = sorted[Number(button.dataset.eventIndex)];
-  const realIndex = calendarEvents.indexOf(item);
+  const realIndex = Number(button.dataset.eventIndex);
+  if (!Number.isInteger(realIndex) || !calendarEvents[realIndex]) return;
   calendarEvents.splice(realIndex, 1);
   saveCalendarEvents();
   renderCalendar();
@@ -2447,6 +3004,7 @@ document.getElementById('saveFeedbackBtn').addEventListener('click', () => {
   renderFeedbackPreview();
   saveFeedbackIssues();
   renderFeedbackIssues();
+  renderToolTriggerTrend();
 });
 
 document.getElementById('feedbackList').addEventListener('click', event => {
@@ -2455,6 +3013,7 @@ document.getElementById('feedbackList').addEventListener('click', event => {
     feedbackIssues = feedbackIssues.filter(item => item.id !== button.dataset.feedbackId);
     saveFeedbackIssues();
     renderFeedbackIssues();
+    renderToolTriggerTrend();
     return;
   }
   const card = event.target.closest('[data-feedback-open-id]');
@@ -2546,7 +3105,6 @@ function renderInsights() {
 renderInsights();
 
 /* ---------- TREND CHART ---------- */
-const ctx = document.getElementById('trendChart').getContext('2d');
 const shiftStyles = {
   A: { color: '#000000', dash: [] },
   B: { color: '#666666', dash: [] },
@@ -2554,6 +3112,28 @@ const shiftStyles = {
   D: { color: '#cccccc', dash: [2,2] },
 };
 let activeShifts = ['A','B','C','D'];
+
+function createChartSafely(canvasId, config) {
+  const canvas = document.getElementById(canvasId);
+  const fallback = {
+    data: config.data || {},
+    options: config.options || {},
+    update() {},
+    resize() {},
+  };
+  if (!canvas || typeof Chart === 'undefined') {
+    if (canvas) {
+      canvas.insertAdjacentHTML('afterend', '<p class="text-xs text-gray-500 mt-3">Chart library unavailable. Data cards are still active.</p>');
+    }
+    return fallback;
+  }
+  try {
+    return new Chart(canvas.getContext('2d'), config);
+  } catch (error) {
+    console.warn(`Chart failed to render for ${canvasId}`, error);
+    return fallback;
+  }
+}
 
 function buildDatasets() {
   return activeShifts.map(s => ({
@@ -2572,7 +3152,7 @@ function buildDatasets() {
   }));
 }
 
-const chart = new Chart(ctx, {
+const chart = createChartSafely('trendChart', {
   type: 'line',
   data: { labels: issueTypes, datasets: buildDatasets() },
   options: {
@@ -2595,6 +3175,105 @@ const chart = new Chart(ctx, {
     }
   }
 });
+
+function buildToolTriggerRows() {
+  const toolMap = new Map();
+  feedbackIssues.forEach(item => {
+    const tool = item.tool || 'No tool recorded';
+    const current = toolMap.get(tool) || { tool, count: 0, issues: new Set() };
+    current.count += 1;
+    if (item.issue) current.issues.add(item.issue);
+    toolMap.set(tool, current);
+  });
+  return Array.from(toolMap.values())
+    .map(item => ({ tool: item.tool, count: item.count, issues: Array.from(item.issues) }))
+    .sort((a, b) => b.count - a.count || a.tool.localeCompare(b.tool));
+}
+
+const toolTriggerChart = createChartSafely('toolTriggerChart', {
+  type: 'bar',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Tool triggers',
+      data: [],
+      backgroundColor: '#0a0a0a',
+      borderRadius: 10,
+      barPercentage: 0.72,
+      categoryPercentage: 0.72,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 900, easing: 'easeOutCubic' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#000',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        padding: 12,
+        cornerRadius: 12,
+        callbacks: {
+          afterLabel: context => {
+            const row = buildToolTriggerRows()[context.dataIndex];
+            return row && row.issues.length ? `Issues: ${row.issues.join(', ')}` : '';
+          }
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666', precision: 0 } },
+      x: { grid: { display: false }, ticks: { color: '#000', font: { weight: '700' } } }
+    }
+  }
+});
+
+function renderToolTriggerTrend() {
+  const rows = buildToolTriggerRows();
+  toolTriggerChart.data.labels = rows.map(row => row.tool);
+  toolTriggerChart.data.datasets[0].data = rows.map(row => row.count);
+  toolTriggerChart.options.scales.y.max = Math.max(5, Math.ceil((rows[0]?.count || 0) / 10) * 10);
+  toolTriggerChart.update();
+
+  const list = document.getElementById('toolTriggerInsights');
+  list.innerHTML = '';
+  if (!rows.length) {
+    list.innerHTML = '<div class="bg-gray-50 rounded-2xl p-4 text-sm text-gray-600">No issue evidence tool triggers logged yet. Add feedback evidence to populate this chart.</div>';
+    return;
+  }
+  rows.slice(0, 4).forEach((row, index) => {
+    const div = document.createElement('div');
+    div.className = 'insight-card card bg-gray-50 rounded-2xl p-4 flex gap-3 cursor-pointer slide-in';
+    div.style.animationDelay = `${index * 120}ms`;
+    div.innerHTML = `
+      <div class="insight-icon w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center text-lg flex-shrink-0">${index + 1}</div>
+      <div>
+        <p class="font-bold text-sm">${escapeHtml(row.tool)}</p>
+        <p class="text-xs text-gray-600 mt-1 leading-relaxed">${row.count} trigger${row.count === 1 ? '' : 's'}${row.issues.length ? ` across ${escapeHtml(row.issues.join(', '))}` : ''}.</p>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+renderToolTriggerTrend();
+
+let activeTrendPage = 0;
+function setTrendPage(index) {
+  activeTrendPage = (index + 2) % 2;
+  document.getElementById('issueTrendPage').classList.toggle('active', activeTrendPage === 0);
+  document.getElementById('toolTrendPage').classList.toggle('active', activeTrendPage === 1);
+  document.getElementById('shiftToggles').classList.toggle('hidden', activeTrendPage === 1);
+  document.querySelectorAll('[data-trend-dot]').forEach(dot => {
+    dot.classList.toggle('active', Number(dot.dataset.trendDot) === activeTrendPage);
+  });
+  if (activeTrendPage === 1) {
+    toolTriggerChart.resize();
+    renderToolTriggerTrend();
+  }
+}
+document.getElementById('trendPrevBtn').addEventListener('click', () => setTrendPage(activeTrendPage - 1));
+document.getElementById('trendNextBtn').addEventListener('click', () => setTrendPage(activeTrendPage + 1));
 
 /* ---------- SHIFT TOGGLES ---------- */
 document.querySelectorAll('.shift-toggle').forEach(btn => {
@@ -2837,6 +3516,343 @@ document.getElementById('topbarDate').textContent = new Date().toLocaleDateStrin
 }) + ' • Post E Process';
 renderCalendar();
 renderFeedbackIssues();
+
+/* ---------- DASHBOARD CHATBOT ---------- */
+const chatbotPanel = document.getElementById('chatbotPanel');
+const chatbotLauncher = document.getElementById('chatbotLauncher');
+const chatbotMessages = document.getElementById('chatbotMessages');
+const chatbotInput = document.getElementById('chatbotInput');
+const chatbotForm = document.getElementById('chatbotForm');
+const chatbotReminder = document.getElementById('chatbotReminder');
+let chatbotStarted = false;
+
+function getIssueTotals() {
+  return issueTypes.map((issue, index) => {
+    const shiftValues = ['A','B','C','D'].map(shift => Number(trendData[shift]?.[index]) || 0);
+    const total = shiftValues.reduce((sum, value) => sum + value, 0);
+    const max = Math.max(...shiftValues);
+    const maxShift = ['A','B','C','D'][shiftValues.indexOf(max)];
+    return { issue, total, maxShift, shiftValues };
+  }).sort((a, b) => b.total - a.total);
+}
+
+function getShiftTotals() {
+  return ['A','B','C','D'].map(shift => ({
+    shift,
+    total: (trendData[shift] || []).reduce((sum, value) => sum + (Number(value) || 0), 0),
+  })).sort((a, b) => b.total - a.total);
+}
+
+function getCaseStatusSummary() {
+  const total = cases.reduce((sum, item) => sum + item.count, 0);
+  const closed = cases.filter(item => item.status === 'closed').reduce((sum, item) => sum + item.count, 0);
+  const ongoing = cases.filter(item => item.status === 'ongoing').reduce((sum, item) => sum + item.count, 0);
+  const pending = cases.filter(item => item.status === 'pending').reduce((sum, item) => sum + item.count, 0);
+  const pct = total ? Math.round((closed / total) * 100) : 0;
+  return { total, closed, ongoing, pending, pct };
+}
+
+function upcomingCalendarEvents(limit = 3) {
+  const today = dateKey(new Date());
+  return getCalendarEvents()
+    .filter(event => event.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, limit);
+}
+
+function chatbotSnapshot() {
+  const issueTotals = getIssueTotals();
+  const shiftTotals = getShiftTotals();
+  const status = getCaseStatusSummary();
+  const topContributor = contributors.slice().sort((a, b) => b.count - a.count)[0];
+  const topIssue = issueTotals[0];
+  const onholdDelta = appState.onholdCurrent - appState.onholdPrevious;
+  const onholdWipDelta = appState.onholdCurrentWip - appState.onholdPreviousWip;
+  return { issueTotals, shiftTotals, status, topContributor, topIssue, onholdDelta, onholdWipDelta };
+}
+
+function chatbotLineList(items, formatter) {
+  return items.length ? items.map(formatter).join('\n') : 'No data available yet.';
+}
+
+function chatbotSectionResponse(text, sectionId, sectionLabel) {
+  return { text, sectionId, sectionLabel };
+}
+
+function chatbotQuestionTerms(question) {
+  const stopWords = new Set([
+    'what','which','where','when','who','why','how','the','and','for','with','from','this','that',
+    'show','tell','give','data','dashboard','section','based','about','issue','issues','tool',
+    'trigger','triggered','machine','evidence','feedback','case','status','now','please','get'
+  ]);
+  return question
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(term => term.length > 2 && !stopWords.has(term));
+}
+
+function textMatchesQuestion(text, terms) {
+  if (!terms.length) return false;
+  const haystack = String(text || '').toLowerCase();
+  return terms.some(term => haystack.includes(term));
+}
+
+function answerToolEvidenceQuestion(question) {
+  const terms = chatbotQuestionTerms(question);
+  const asksCount = /\b(how many|count|total|number|logged|case|cases|issue|issues)\b/.test(question.toLowerCase());
+  const asksTop = /\b(top|highest|most|main|major)\b/.test(question.toLowerCase());
+  const matchedContributors = terms.length
+    ? contributors.filter(item => textMatchesQuestion(`${item.issue} ${item.tool}`, terms))
+    : contributors;
+  const matchedFeedback = terms.length
+    ? feedbackIssues.filter(item => textMatchesQuestion(`${item.issue} ${item.tool} ${item.shift} ${item.date} ${item.notes}`, terms))
+    : feedbackIssues;
+  const feedbackByTool = feedbackIssues.reduce((map, item) => {
+    const key = item.tool || 'No tool recorded';
+    map[key] = map[key] || [];
+    map[key].push(item);
+    return map;
+  }, {});
+  const toolRows = Object.entries(feedbackByTool)
+    .map(([tool, items]) => ({ tool, count: items.length, issues: items }))
+    .sort((a, b) => b.count - a.count || a.tool.localeCompare(b.tool));
+
+  if (!matchedContributors.length && !matchedFeedback.length) {
+    return chatbotSectionResponse(
+      'I checked the contributor tools and feedback evidence only, but I could not find a matching tool trigger or evidence item for that question.',
+      'feedbackIssues',
+      'Go to Issue Evidence'
+    );
+  }
+
+  const lines = [];
+  if (asksCount || asksTop) {
+    lines.push(`Issue Evidence logged: ${feedbackIssues.length} case${feedbackIssues.length === 1 ? '' : 's'}.`);
+    if (toolRows.length) {
+      lines.push('Tool trigger summary:');
+      lines.push(chatbotLineList(toolRows.slice(0, 5), row => `- ${row.tool}: ${row.count} case${row.count === 1 ? '' : 's'}`));
+      lines.push(`Top tool trigger: ${toolRows[0].tool} with ${toolRows[0].count} case${toolRows[0].count === 1 ? '' : 's'}.`);
+    }
+  }
+  if (!asksCount && matchedContributors.length) {
+    lines.push('Tool trigger / machine match:');
+    lines.push(chatbotLineList(matchedContributors, item => `- ${item.issue}: ${item.tool || 'No tool recorded'} (${item.count} mentions)`));
+  }
+  if (matchedFeedback.length) {
+    lines.push(asksCount || asksTop ? 'Logged issue evidence:' : 'Feedback evidence:');
+    lines.push(chatbotLineList(matchedFeedback.slice(0, 5), item => {
+      const imageCount = (item.images || []).length;
+      const evidence = imageCount ? `${imageCount} image evidence` : 'No image evidence';
+      const meta = [item.shift, item.date, evidence].filter(Boolean).join(' | ');
+      return `- ${item.issue || 'Untitled'} | ${item.tool || 'No tool'}${meta ? ` | ${meta}` : ''}${item.notes ? `\n  Notes: ${item.notes}` : ''}`;
+    }));
+  }
+  lines.push('Analysis: this answer is based on the Issue Evidence & Tool Trigger section.');
+  return {
+    text: lines.join('\n'),
+    sectionId: 'feedbackIssues',
+    sectionLabel: 'Go to Issue Evidence',
+  };
+}
+
+function answerDashboardQuestion(question) {
+  const q = question.toLowerCase();
+  const snap = chatbotSnapshot();
+
+  if (/\b(help|support|ask|question|suggest)\b/.test(q)) {
+    return chatbotSectionResponse(
+      'I can help with dashboard summary, WIP, on-hold lots, top contributors, shift trend, summary case status, feedback issues, reminders, calendar events, stock card values, and imported Excel status.\n\nTry: "Which issue is highest?", "Show case status", or "Any feedback issues?".',
+      'overview',
+      'Go to Overview'
+    );
+  }
+
+  if (/\b(summary|overview|current|today|dashboard|kpi)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `Current ${appState.week} summary:\n- Total WIP: ${formatWip(appState.wip)}M\n- QDR threads: ${Math.round(appState.threads).toLocaleString()}\n- Completion target: ${appState.completion}%\n- Summary cases: ${snap.status.total} total, ${snap.status.closed} closed, ${snap.status.ongoing} ongoing, ${snap.status.pending} pending (${snap.status.pct}% closed)\n- Top issue: ${snap.topIssue?.issue || 'N/A'} with ${snap.topIssue?.total || 0} mentions.`,
+      'overview',
+      'Go to Overview'
+    );
+  }
+
+  if (/\b(tool|tools|trigger|triggered|machine|machines|evidence|photo|image|screenshot)\b/.test(q) ||
+      (/\b(how many|count|total|number|logged)\b/.test(q) && /\b(issue|issues|case|cases)\b/.test(q))) {
+    return answerToolEvidenceQuestion(question);
+  }
+
+  if (/\b(contributor|top|highest|biggest)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `Top contributors:\n${chatbotLineList(contributors.slice().sort((a, b) => b.count - a.count), item => `- ${item.issue}: ${item.count} mentions (${item.tool || 'No tool'})`)}\n\nBy shift trend total, ${snap.topIssue?.issue || 'N/A'} is highest with ${snap.topIssue?.total || 0} mentions.`,
+      'dashboardBreakdown',
+      'Go to Contributors'
+    );
+  }
+
+  if (/\b(shift|trend|a shift|b shift|c shift|d shift)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `Shift trend totals:\n${chatbotLineList(snap.shiftTotals, item => `- Shift ${item.shift}: ${item.total} mentions`)}\n\nIssue totals:\n${chatbotLineList(snap.issueTotals, item => `- ${item.issue}: ${item.total} mentions, highest in Shift ${item.maxShift}`)}`,
+      'trend',
+      'Go to Trend'
+    );
+  }
+
+  if (/\b(on ?hold|hold|owner|lots|wip)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `On-hold status:\n- Current lots: ${appState.onholdCurrent} (${snap.onholdDelta > 0 ? '+' : ''}${snap.onholdDelta} vs previous ${appState.onholdPrevious})\n- Current WIP: ${formatOnholdWip(appState.onholdCurrentWip)} (${snap.onholdWipDelta > 0 ? '+' : ''}${formatOnholdWip(snap.onholdWipDelta)} vs previous ${formatOnholdWip(appState.onholdPreviousWip)})\n\nOwner breakdown:\n${chatbotLineList(onholdOwners, item => `- ${item.owner}: ${item.lots} lots, ${formatOnholdWip(item.wip)} WIP`)}`,
+      'onholdTrend',
+      'Go to On-hold'
+    );
+  }
+
+  if (/\b(case|cases|closed|ongoing|pending|mrb|aql|safetynet|safety net)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `Summary case status:\n- Total: ${snap.status.total}\n- Closed: ${snap.status.closed}\n- Ongoing: ${snap.status.ongoing}\n- Pending: ${snap.status.pending}\n- Closure: ${snap.status.pct}%\n\nCases:\n${chatbotLineList(cases, item => `- ${item.category}: ${item.count} case(s), ${statusLabels[item.status] || item.status}`)}`,
+      'summary',
+      'Go to Summary'
+    );
+  }
+
+  if (/\b(feedback|improvement|note|photo|evidence)\b/.test(q)) {
+    if (!feedbackIssues.length) return chatbotSectionResponse('No feedback issues are currently logged. Add feedback in the Feedback Issues section and I can summarize it here.', 'feedbackIssues', 'Go to Issue Evidence');
+    const terms = chatbotQuestionTerms(question);
+    const relevantFeedback = feedbackIssues.filter(item =>
+      textMatchesQuestion(`${item.issue} ${item.tool} ${item.shift} ${item.date} ${item.notes}`, terms)
+    );
+    const scopedFeedback = relevantFeedback.length ? relevantFeedback : feedbackIssues;
+    return chatbotSectionResponse(
+      `Feedback issues (${scopedFeedback.length}):\n${chatbotLineList(scopedFeedback.slice(0, 6), item => `- ${item.issue || 'Untitled'} | ${item.tool || 'No tool'} | ${item.shift || 'No shift'} | ${item.date || 'No date'}${item.notes ? ` | ${item.notes}` : ''}`)}`,
+      'feedbackIssues',
+      'Go to Issue Evidence'
+    );
+  }
+
+  if (/\b(reminder|reminders|announcement)\b/.test(q)) {
+    return chatbotSectionResponse(
+      `Current reminders:\n${chatbotLineList(reminders, item => `- ${item.title}: ${item.message}`)}`,
+      'settings',
+      'Go to Settings'
+    );
+  }
+
+  if (/\b(calendar|event|events|upcoming|schedule)\b/.test(q)) {
+    const events = upcomingCalendarEvents();
+    return chatbotSectionResponse(events.length
+      ? `Upcoming calendar events:\n${chatbotLineList(events, item => `- ${item.title} on ${item.date}${item.holiday ? ' (Malaysia public holiday)' : ''}`)}`
+      : 'No upcoming calendar events are currently added.',
+      'calendarSection',
+      'Go to Calendar'
+    );
+  }
+
+  if (/\b(stock|mu|price|share)\b/.test(q)) {
+    const price = document.getElementById('micronStockPrice')?.textContent || 'Not available';
+    const change = document.getElementById('micronStockChange')?.textContent || 'Not available';
+    return chatbotSectionResponse(
+      `Micron stock card:\n- Price: ${price}\n- Change: ${change}\n\nClick the stock price or change badge if you want to manually override the values.`,
+      'micronStockCard',
+      'Go to Stock Card'
+    );
+  }
+
+  if (/\b(excel|import|loaded|manual|data status|source)\b/.test(q)) {
+    const status = document.getElementById('dataStatus')?.textContent || 'Unknown';
+    return chatbotSectionResponse(
+      `Data source status: ${status}.\nYou can import an Excel template from the topbar. I will use the refreshed dashboard values after import.`,
+      'settings',
+      'Go to Data Settings'
+    );
+  }
+
+  const terms = chatbotQuestionTerms(question);
+  const matches = [];
+  contributors.forEach(item => {
+    if (textMatchesQuestion(`${item.issue} ${item.tool}`, terms)) matches.push(`Contributor: ${item.issue}, ${item.count} mentions, ${item.tool || 'No tool'}`);
+  });
+  feedbackIssues.forEach(item => {
+    if (textMatchesQuestion(`${item.issue} ${item.tool} ${item.notes}`, terms)) matches.push(`Feedback: ${item.issue || 'Untitled'} (${item.tool || 'No tool'})`);
+  });
+  if (/\b(case|cases|mrb|aql|safetynet|safety net)\b/.test(q)) {
+    cases.forEach(item => {
+      if (textMatchesQuestion(`${item.category} ${item.items.join(' ')}`, terms)) matches.push(`Case: ${item.category} (${statusLabels[item.status] || item.status})`);
+    });
+  }
+
+  if (matches.length) return chatbotSectionResponse(`I found these related dashboard items:\n${matches.slice(0, 6).map(item => `- ${item}`).join('\n')}`, 'feedbackIssues', 'Go to Related Section');
+  return chatbotSectionResponse('I could not find that exact item in the dashboard data. Try asking about summary, top contributor, shift trend, on-hold lots/WIP, case status, feedback, reminders, calendar, stock, or Excel data status.', 'overview', 'Go to Overview');
+}
+
+function addChatbotMessage(response, sender = 'bot') {
+  const text = typeof response === 'string' ? response : response.text;
+  const message = document.createElement('div');
+  message.className = `chatbot-message ${sender}`;
+  message.textContent = text;
+  if (sender === 'bot' && response && typeof response === 'object' && response.sectionId) {
+    message.appendChild(document.createElement('br'));
+    const button = document.createElement('button');
+    button.className = 'chatbot-section-btn';
+    button.type = 'button';
+    button.dataset.sectionTarget = response.sectionId;
+    button.textContent = response.sectionLabel || 'Go to section';
+    message.appendChild(button);
+  }
+  chatbotMessages.appendChild(message);
+  chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+
+function openChatbot() {
+  chatbotPanel.classList.add('open');
+  chatbotLauncher.setAttribute('aria-label', 'Close dashboard chatbot');
+  chatbotReminder.classList.add('hidden');
+  if (!chatbotStarted) {
+    addChatbotMessage(`Hi, I am your Post E dashboard support chatbot. Ask me about ${appState.week} QDR data, on-hold lots, contributors, cases, feedback, reminders, or calendar events.`);
+    chatbotStarted = true;
+  }
+  setTimeout(() => chatbotInput.focus(), 80);
+}
+
+function closeChatbot() {
+  chatbotPanel.classList.remove('open');
+  chatbotLauncher.setAttribute('aria-label', 'Open dashboard chatbot');
+}
+
+function askChatbot(question) {
+  const text = String(question || '').trim();
+  if (!text) return;
+  addChatbotMessage(text, 'user');
+  addChatbotMessage(answerDashboardQuestion(text), 'bot');
+}
+
+function scrollToDashboardSection(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  closeChatbot();
+  const topbarHeight = document.querySelector('.topbar')?.offsetHeight || 0;
+  const targetTop = target.getBoundingClientRect().top + window.scrollY - topbarHeight - 24;
+  window.scrollTo({ top: targetTop, behavior: 'smooth' });
+}
+
+chatbotLauncher.addEventListener('click', () => {
+  if (chatbotPanel.classList.contains('open')) closeChatbot();
+  else openChatbot();
+});
+chatbotReminder.addEventListener('click', openChatbot);
+document.getElementById('closeChatbotBtn').addEventListener('click', closeChatbot);
+chatbotForm.addEventListener('submit', event => {
+  event.preventDefault();
+  askChatbot(chatbotInput.value);
+  chatbotInput.value = '';
+});
+document.querySelectorAll('[data-chat-question]').forEach(button => {
+  button.addEventListener('click', () => askChatbot(button.dataset.chatQuestion));
+});
+chatbotMessages.addEventListener('click', event => {
+  const button = event.target.closest('[data-section-target]');
+  if (!button) return;
+  scrollToDashboardSection(button.dataset.sectionTarget);
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && chatbotPanel.classList.contains('open')) closeChatbot();
+});
 
 /* ---------- MICRON LOGO CLICK ---------- */
 const micronLogo = document.getElementById('micronLogo');
