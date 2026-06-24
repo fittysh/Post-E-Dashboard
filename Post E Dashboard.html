@@ -90,6 +90,20 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(5px); }
   }
+  @keyframes completionPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(34,197,94,0); transform: translateY(0); }
+    45% { box-shadow: 0 18px 44px rgba(34,197,94,0.22); transform: translateY(-2px); }
+  }
+  @keyframes completionBadgePop {
+    0% { opacity: 0; transform: translateY(8px) scale(0.86); }
+    45% { opacity: 1; transform: translateY(-2px) scale(1.06); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes confettiDrop {
+    0% { opacity: 0; transform: translateY(-8px) rotate(0deg) scale(0.6); }
+    12% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(72px) rotate(220deg) scale(1); }
+  }
   .reveal { opacity: 0; }
   .reveal.visible { animation: fadeUp 0.8s ease-out forwards; }
   .pulse-dot { animation: pulseDot 1.5s infinite ease-in-out; }
@@ -825,6 +839,18 @@
     font-weight: 800;
     color: #404040;
   }
+  .feedback-week-strip {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(170px, 0.8fr) auto auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .feedback-share-status {
+    min-height: 18px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #525252;
+  }
   .feedback-thumb {
     width: 74px;
     height: 58px;
@@ -934,6 +960,57 @@
   .completion-fill-yellow { background: #facc15; }
   .completion-fill-orange { background: #f97316; }
   .completion-fill-green { background: #22c55e; }
+  .completion-celebration {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    padding: 12px;
+    margin: -12px;
+  }
+  .completion-celebration.complete {
+    animation: completionPulse 1.5s ease-in-out 2;
+    background: linear-gradient(180deg, #f0fdf4 0%, #fff 72%);
+  }
+  .completion-complete-badge {
+    display: none;
+    width: max-content;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: #0a0a0a;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 900;
+  }
+  .completion-celebration.complete .completion-complete-badge {
+    display: inline-flex;
+    animation: completionBadgePop 520ms ease-out both;
+  }
+  .completion-confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .completion-confetti span {
+    position: absolute;
+    top: 0;
+    width: 7px;
+    height: 12px;
+    border-radius: 2px;
+    opacity: 0;
+  }
+  .completion-celebration.celebrate .completion-confetti span {
+    animation: confettiDrop 980ms ease-out forwards;
+  }
+  .completion-confetti span:nth-child(1) { left: 8%; background: #22c55e; animation-delay: 0ms; }
+  .completion-confetti span:nth-child(2) { left: 18%; background: #facc15; animation-delay: 90ms; }
+  .completion-confetti span:nth-child(3) { left: 31%; background: #0ea5e9; animation-delay: 30ms; }
+  .completion-confetti span:nth-child(4) { left: 45%; background: #f97316; animation-delay: 130ms; }
+  .completion-confetti span:nth-child(5) { left: 59%; background: #ec4899; animation-delay: 60ms; }
+  .completion-confetti span:nth-child(6) { left: 72%; background: #22c55e; animation-delay: 160ms; }
+  .completion-confetti span:nth-child(7) { left: 84%; background: #facc15; animation-delay: 40ms; }
+  .completion-confetti span:nth-child(8) { left: 94%; background: #0a0a0a; animation-delay: 110ms; }
   .stock-glance-card {
     position: relative;
     overflow: hidden;
@@ -1032,6 +1109,11 @@
     padding: 12px 0;
     border-bottom: 1px solid #e5e5e5;
   }
+  @media (max-width: 900px) {
+    .feedback-week-strip {
+      grid-template-columns: 1fr;
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .brand-lockup { animation: none; }
     .brand-lockup.logo-animate,
@@ -1048,6 +1130,9 @@
     .reminder-card.swap,
     .feedback-card,
     .feedback-modal,
+    .completion-celebration.complete,
+    .completion-celebration.celebrate .completion-confetti span,
+    .completion-celebration.complete .completion-complete-badge,
     .onhold-status,
     .onhold-arrow {
       animation: none;
@@ -1480,7 +1565,19 @@
             </div>
           </div>
 
-          <div id="feedbackBody" class="collapsible-body grid grid-cols-1 lg:grid-cols-12 gap-6" style="max-height: 900px;">
+          <div id="feedbackBody" class="collapsible-body grid grid-cols-1 lg:grid-cols-12 gap-6" style="max-height: 1200px;">
+            <div class="lg:col-span-12 bg-gray-50 rounded-2xl p-4">
+              <div class="feedback-week-strip">
+                <select id="feedbackWeekFilter" class="field" aria-label="Filter issue evidence by work week">
+                  <option value="all">All work weeks</option>
+                </select>
+                <input id="feedbackWeekInput" class="field" type="date" aria-label="Choose any date in the work week">
+                <button id="exportFeedbackBtn" class="action-btn secondary" type="button">Export Shared File</button>
+                <button id="importFeedbackBtn" class="action-btn secondary" type="button">Import Shared File</button>
+              </div>
+              <input id="feedbackImportInput" class="hidden" type="file" accept="application/json,.json">
+              <p id="feedbackShareStatus" class="feedback-share-status mt-2">Saved in this browser. Export the shared file for other users to import.</p>
+            </div>
             <div class="lg:col-span-5 bg-gray-50 rounded-2xl p-5">
               <h4 class="font-bold text-sm uppercase tracking-wider mb-4">Add Feedback</h4>
               <div class="space-y-3">
@@ -1494,6 +1591,10 @@
                     <option value="Shift D">Shift D</option>
                   </select>
                   <input id="feedbackDateInput" class="field" type="date">
+                </div>
+                <div class="flex items-center justify-between gap-3 flex-wrap">
+                  <span class="text-xs uppercase tracking-wider text-gray-500 font-bold">Work week</span>
+                  <span id="feedbackDraftWeek" class="photo-count-pill">WW--</span>
                 </div>
                 <textarea id="feedbackNotesInput" class="field min-h-24 resize-none" placeholder="Improvement notes"></textarea>
                 <div class="space-y-2">
@@ -1585,10 +1686,15 @@
                 </div>
               </div>
 
-              <div class="mt-6 pt-6 border-t border-gray-200">
+              <div id="completionCelebration" class="completion-celebration mt-6 pt-6 border-t border-gray-200">
+                <div class="completion-confetti" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span>
+                  <span></span><span></span><span></span><span></span>
+                </div>
                 <p class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-2">Completion</p>
                 <div class="progress-bar"><div id="completionBar" class="progress-fill" style="width:40%"></div></div>
                 <p id="completionText" class="text-xs text-gray-500 mt-2">40% closed</p>
+                <span id="completionBadge" class="completion-complete-badge">All cases closed 🎉</span>
               </div>
             </div>
 
@@ -1869,8 +1975,10 @@ const malaysiaPublicHolidays = [
 ];
 let feedbackIssues = readStoredJson('postEFeedbackIssues', [], Array.isArray);
 let feedbackImageDraft = [];
+let feedbackWeekFilter = 'all';
 let caseMedia = readStoredJson('postECaseMedia', {}, value => value && typeof value === 'object' && !Array.isArray(value));
 let activeCaseId = null;
+let lastCompletionPct = null;
 
 function createId() {
   return window.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
@@ -2557,7 +2665,7 @@ function downloadCsv() {
     ...contributors.map(c => ['Contributor', c.issue, c.tool, c.count]),
     ...reminders.map(r => ['Reminder', r.title, r.message, '']),
     ...getCalendarEvents().map(e => ['Calendar', e.date, e.title, e.detail]),
-    ...feedbackIssues.map(f => ['Feedback', f.issue, f.tool, `${f.shift} | ${f.date} | ${f.notes}`]),
+    ...feedbackIssues.map(f => ['Feedback', f.issue, f.tool, `${f.shift} | ${f.date} | ${feedbackWeekLabel(f.workWeek || feedbackWeekFromDate(f.date))} | ${f.notes}`]),
     ...onholdOwners.map(o => ['Onhold Owner', o.owner, o.lots, formatOnholdWip(o.wip)]),
   ];
   ['A','B','C','D'].forEach(shift => {
@@ -2899,6 +3007,182 @@ function saveFeedbackIssues() {
   localStorage.setItem('postEFeedbackIssues', JSON.stringify(feedbackIssues));
 }
 
+function feedbackWeekFromDate(value) {
+  const source = value instanceof Date
+    ? new Date(value)
+    : value ? new Date(`${value}T00:00:00`) : new Date();
+  if (Number.isNaN(source.getTime())) return 'unknown';
+  const weekStart = feedbackWeekStartDate(source);
+  const firstThursday = firstFeedbackThursday(weekStart.getUTCFullYear());
+  const yearStart = weekStart < firstThursday
+    ? firstFeedbackThursday(weekStart.getUTCFullYear() - 1)
+    : firstThursday;
+  const week = Math.floor((weekStart - yearStart) / (7 * 86400000)) + 1;
+  return `${yearStart.getUTCFullYear()}-WW${String(week).padStart(2, '0')}`;
+}
+
+function feedbackWeekStartDate(value) {
+  const source = value instanceof Date
+    ? new Date(value)
+    : value ? new Date(`${value}T00:00:00`) : new Date();
+  const date = new Date(Date.UTC(source.getFullYear(), source.getMonth(), source.getDate()));
+  const day = date.getUTCDay();
+  const daysSinceThursday = (day - 4 + 7) % 7;
+  date.setUTCDate(date.getUTCDate() - daysSinceThursday);
+  return date;
+}
+
+function firstFeedbackThursday(year) {
+  const date = new Date(Date.UTC(year, 0, 1));
+  const daysUntilThursday = (4 - date.getUTCDay() + 7) % 7;
+  date.setUTCDate(date.getUTCDate() + daysUntilThursday);
+  return date;
+}
+
+function parseFeedbackWeekKey(weekKey) {
+  const legacy = String(weekKey || '').match(/^(\d{4})-W(\d{2})$/);
+  if (legacy) return { year: Number(legacy[1]), week: Number(legacy[2]) };
+  const custom = String(weekKey || '').match(/^(\d{4})-WW(\d{2})$/);
+  return custom ? { year: Number(custom[1]), week: Number(custom[2]) } : null;
+}
+
+function feedbackWeekRange(weekKey) {
+  const parsed = parseFeedbackWeekKey(weekKey);
+  if (!parsed) return null;
+  const start = firstFeedbackThursday(parsed.year);
+  start.setUTCDate(start.getUTCDate() + ((parsed.week - 1) * 7));
+  const end = new Date(start);
+  end.setUTCDate(start.getUTCDate() + 6);
+  return { start, end };
+}
+
+function formatShortDate(date) {
+  return `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+function feedbackWeekLabel(weekKey) {
+  if (!weekKey || weekKey === 'unknown') return 'WW--';
+  const parsed = parseFeedbackWeekKey(weekKey);
+  if (!parsed) return weekKey;
+  const range = feedbackWeekRange(weekKey);
+  const dates = range ? ` (${formatShortDate(range.start)}-${formatShortDate(range.end)})` : '';
+  return `WW${String(parsed.week).padStart(2, '0')} ${parsed.year}${dates}`;
+}
+
+function normalizeFeedbackIssue(item) {
+  const date = item.date || dateKey(new Date());
+  return {
+    id: item.id || createId(),
+    issue: item.issue || '',
+    tool: item.tool || '',
+    shift: item.shift || 'Shift A',
+    date,
+    workWeek: feedbackWeekFromDate(date),
+    notes: item.notes || '',
+    images: Array.isArray(item.images) ? item.images : [],
+    savedAt: item.savedAt || '',
+  };
+}
+
+function normalizeFeedbackIssues() {
+  feedbackIssues = feedbackIssues.map(normalizeFeedbackIssue);
+}
+
+function getVisibleFeedbackIssues() {
+  return feedbackWeekFilter === 'all'
+    ? feedbackIssues
+    : feedbackIssues.filter(item => (item.workWeek || feedbackWeekFromDate(item.date)) === feedbackWeekFilter);
+}
+
+function getFeedbackWeekOptions() {
+  const weekKeys = new Set(feedbackIssues.map(item => item.workWeek || feedbackWeekFromDate(item.date)));
+  const inputWeek = document.getElementById('feedbackWeekInput')?.value;
+  if (inputWeek) weekKeys.add(feedbackWeekFromDate(inputWeek));
+  return Array.from(weekKeys)
+    .filter(Boolean)
+    .sort((a, b) => b.localeCompare(a));
+}
+
+function setFeedbackShareStatus(message) {
+  const status = document.getElementById('feedbackShareStatus');
+  if (status) status.textContent = message;
+}
+
+function updateFeedbackDraftWeek() {
+  const date = document.getElementById('feedbackDateInput').value || dateKey(new Date());
+  document.getElementById('feedbackDraftWeek').textContent = feedbackWeekLabel(feedbackWeekFromDate(date));
+}
+
+function renderFeedbackWeekControls() {
+  const select = document.getElementById('feedbackWeekFilter');
+  const input = document.getElementById('feedbackWeekInput');
+  if (!select || !input) return;
+  const options = getFeedbackWeekOptions();
+  if (feedbackWeekFilter !== 'all' && !options.includes(feedbackWeekFilter)) {
+    feedbackWeekFilter = 'all';
+  }
+  select.innerHTML = [
+    '<option value="all">All work weeks</option>',
+    ...options.map(weekKey => `<option value="${escapeHtml(weekKey)}">${escapeHtml(feedbackWeekLabel(weekKey))}</option>`),
+  ].join('');
+  select.value = feedbackWeekFilter;
+  if (feedbackWeekFilter !== 'all') {
+    const range = feedbackWeekRange(feedbackWeekFilter);
+    if (range) input.value = dateKey(range.start);
+  }
+}
+
+function exportFeedbackShareFile() {
+  normalizeFeedbackIssues();
+  const payload = {
+    type: 'post-e-feedback-shared-file',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    exportedWeek: appState.week,
+    feedbackIssues,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `post-e-feedback-shared-${dateKey(new Date())}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  setFeedbackShareStatus(`Shared file exported with ${feedbackIssues.length} item${feedbackIssues.length === 1 ? '' : 's'}.`);
+}
+
+function mergeImportedFeedbackIssues(items) {
+  const existing = new Map(feedbackIssues.map(item => [item.id, item]));
+  items.map(normalizeFeedbackIssue).forEach(item => {
+    existing.set(item.id, item);
+  });
+  feedbackIssues = Array.from(existing.values()).sort((a, b) => {
+    const aTime = a.savedAt || a.date || '';
+    const bTime = b.savedAt || b.date || '';
+    return bTime.localeCompare(aTime);
+  });
+  saveFeedbackIssues();
+}
+
+function importFeedbackShareFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = event => {
+    try {
+      const parsed = JSON.parse(event.target.result);
+      const items = Array.isArray(parsed) ? parsed : parsed.feedbackIssues;
+      if (!Array.isArray(items)) throw new Error('Missing feedbackIssues array');
+      mergeImportedFeedbackIssues(items);
+      renderFeedbackIssues();
+      renderToolTriggerTrend();
+      setFeedbackShareStatus(`Imported ${items.length} shared item${items.length === 1 ? '' : 's'} from ${file.name}.`);
+    } catch (error) {
+      console.warn('Could not import shared feedback file', error);
+      setFeedbackShareStatus('Import failed. Choose a valid Post E feedback shared JSON file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
 function renderFeedbackPreview() {
   const preview = document.getElementById('feedbackImagePreview');
   const count = document.getElementById('feedbackPhotoCount');
@@ -2911,11 +3195,20 @@ function renderFeedbackPreview() {
 }
 
 function renderFeedbackIssues() {
+  normalizeFeedbackIssues();
+  renderFeedbackWeekControls();
   const list = document.getElementById('feedbackList');
   const count = document.getElementById('feedbackCount');
-  count.textContent = `${feedbackIssues.length} item${feedbackIssues.length === 1 ? '' : 's'}`;
+  const visibleFeedback = getVisibleFeedbackIssues();
+  count.textContent = feedbackWeekFilter === 'all'
+    ? `${feedbackIssues.length} item${feedbackIssues.length === 1 ? '' : 's'}`
+    : `${visibleFeedback.length}/${feedbackIssues.length} items`;
   list.innerHTML = '';
-  feedbackIssues.forEach((item, index) => {
+  if (!visibleFeedback.length) {
+    list.innerHTML = '<div class="bg-gray-50 rounded-2xl p-5 text-sm text-gray-600">No issue evidence for this work week yet.</div>';
+    return;
+  }
+  visibleFeedback.forEach((item, index) => {
     const div = document.createElement('div');
     div.className = 'feedback-card border border-gray-200 rounded-2xl p-4 bg-white';
     div.dataset.feedbackOpenId = item.id;
@@ -2926,7 +3219,7 @@ function renderFeedbackIssues() {
       <div class="flex items-start justify-between gap-3">
         <div>
           <p class="font-bold text-lg">${escapeHtml(item.issue || 'Feedback issue')}</p>
-          <p class="text-xs text-gray-500 mt-1">${escapeHtml(item.shift || 'Shift')} • ${escapeHtml(item.date || 'No date')}</p>
+          <p class="text-xs text-gray-500 mt-1">${escapeHtml(item.shift || 'Shift')} &bull; ${escapeHtml(item.date || 'No date')} &bull; ${escapeHtml(feedbackWeekLabel(item.workWeek))}</p>
         </div>
         <span class="text-xs bg-black text-white rounded-full px-3 py-1 font-bold">${escapeHtml(item.tool || 'Tool pending')}</span>
       </div>
@@ -2945,7 +3238,7 @@ function openFeedbackDetails(id) {
   if (!item) return;
   document.getElementById('feedbackModalTool').textContent = item.tool || 'Tool pending';
   document.getElementById('feedbackModalTitle').textContent = item.issue || 'Feedback issue';
-  document.getElementById('feedbackModalMeta').textContent = `${item.shift || 'Shift'} • ${item.date || 'No date'}`;
+  document.getElementById('feedbackModalMeta').textContent = `${item.shift || 'Shift'} | ${item.date || 'No date'} | ${feedbackWeekLabel(item.workWeek)}`;
   document.getElementById('feedbackModalNotes').textContent = item.notes || 'No improvement notes added.';
   document.getElementById('feedbackModalImages').innerHTML = (item.images && item.images.length)
     ? item.images.map(src => `<img class="feedback-modal-image" src="${src}" alt="Feedback evidence">`).join('')
@@ -2980,6 +3273,35 @@ document.getElementById('feedbackImagePreview').addEventListener('click', event 
   renderFeedbackPreview();
 });
 
+document.getElementById('feedbackDateInput').addEventListener('change', updateFeedbackDraftWeek);
+
+document.getElementById('feedbackWeekFilter').addEventListener('change', event => {
+  feedbackWeekFilter = event.target.value;
+  renderFeedbackIssues();
+});
+
+document.getElementById('feedbackWeekInput').addEventListener('change', event => {
+  feedbackWeekFilter = event.target.value ? feedbackWeekFromDate(event.target.value) : 'all';
+  renderFeedbackIssues();
+});
+
+document.getElementById('exportFeedbackBtn').addEventListener('click', exportFeedbackShareFile);
+document.getElementById('importFeedbackBtn').addEventListener('click', () => {
+  document.getElementById('feedbackImportInput').click();
+});
+document.getElementById('feedbackImportInput').addEventListener('change', event => {
+  importFeedbackShareFile(event.target.files?.[0]);
+  event.target.value = '';
+});
+
+window.addEventListener('storage', event => {
+  if (event.key !== 'postEFeedbackIssues') return;
+  feedbackIssues = readStoredJson('postEFeedbackIssues', [], Array.isArray);
+  renderFeedbackIssues();
+  renderToolTriggerTrend();
+  setFeedbackShareStatus('Feedback refreshed from another open dashboard tab.');
+});
+
 document.getElementById('saveFeedbackBtn').addEventListener('click', () => {
   const issue = document.getElementById('feedbackIssueInput').value.trim();
   const tool = document.getElementById('feedbackToolInput').value.trim();
@@ -2993,8 +3315,10 @@ document.getElementById('saveFeedbackBtn').addEventListener('click', () => {
     tool,
     shift,
     date,
+    workWeek: feedbackWeekFromDate(date),
     notes,
     images: feedbackImageDraft,
+    savedAt: new Date().toISOString(),
   });
   document.getElementById('feedbackIssueInput').value = '';
   document.getElementById('feedbackToolInput').value = '';
@@ -3005,6 +3329,7 @@ document.getElementById('saveFeedbackBtn').addEventListener('click', () => {
   saveFeedbackIssues();
   renderFeedbackIssues();
   renderToolTriggerTrend();
+  setFeedbackShareStatus('Saved in this browser. Export the shared file so other users can import the latest feedback.');
 });
 
 document.getElementById('feedbackList').addEventListener('click', event => {
@@ -3495,7 +3820,17 @@ function updateGlance() {
   completionBar.style.width = pct + '%';
   completionBar.classList.remove('completion-fill-yellow', 'completion-fill-orange', 'completion-fill-green');
   completionBar.classList.add(pct >= 80 ? 'completion-fill-green' : pct >= 50 ? 'completion-fill-orange' : 'completion-fill-yellow');
-  document.getElementById('completionText').textContent = pct + '% closed';
+  const completionText = document.getElementById('completionText');
+  const celebration = document.getElementById('completionCelebration');
+  completionText.textContent = pct === 100 ? '100% closed - excellent work' : pct + '% closed';
+  celebration.classList.toggle('complete', pct === 100);
+  if (pct === 100 && lastCompletionPct !== 100) {
+    celebration.classList.remove('celebrate');
+    void celebration.offsetWidth;
+    celebration.classList.add('celebrate');
+  }
+  if (pct < 100) celebration.classList.remove('celebrate');
+  lastCompletionPct = pct;
 }
 
 renderCases();
@@ -3508,6 +3843,10 @@ renderReminder();
 renderReminderList();
 document.getElementById('eventDateInput').value = dateKey(new Date());
 document.getElementById('feedbackDateInput').value = dateKey(new Date());
+document.getElementById('feedbackWeekInput').value = dateKey(new Date());
+normalizeFeedbackIssues();
+saveFeedbackIssues();
+updateFeedbackDraftWeek();
 document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-US', {
   weekday: 'short',
   day: '2-digit',
