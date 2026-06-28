@@ -1103,11 +1103,38 @@
   }
   .onhold-owner-row {
     display: grid;
-    grid-template-columns: 1.4fr 0.8fr 0.9fr;
+    grid-template-columns: 1.4fr 0.8fr 0.9fr auto;
     gap: 12px;
     align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #e5e5e5;
+  }
+  .onhold-owner-row.detail-link {
+    color: inherit;
+    text-decoration: none;
+    border-radius: 14px;
+    padding-left: 12px;
+    padding-right: 12px;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+  .onhold-owner-row.detail-link:hover,
+  .onhold-owner-row.detail-link:focus-visible {
+    background: #f5f5f5;
+    border-color: #0a0a0a;
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .onhold-owner-open {
+    justify-self: end;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    padding: 5px 9px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #fff;
+    color: #0a0a0a;
   }
   @media (max-width: 900px) {
     .feedback-week-strip {
@@ -1392,11 +1419,7 @@
               <span class="inline-block bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Top 3 Contributor</span>
               <h3 class="text-2xl font-bold mt-3">Issues & Tools Breakdown</h3>
             </div>
-            <select id="weekFilter" class="bg-gray-100 border-0 rounded-full px-4 py-2 text-sm font-medium outline-none cursor-pointer">
-              <option value="ww21">WW21</option>
-              <option value="ww22">WW22</option>
-              <option value="ww23">WW23</option>
-            </select>
+            <select id="weekFilter" class="bg-gray-100 border-0 rounded-full px-4 py-2 text-sm font-medium outline-none cursor-pointer" aria-label="Filter top contributors by work week"></select>
           </div>
 
           <table class="w-full">
@@ -1733,6 +1756,7 @@
       <span>Owner</span>
       <span class="text-right">Total Lots</span>
       <span class="text-right">Total WIP</span>
+      <span></span>
     </div>
     <div id="onholdOwnerList"></div>
   </div>
@@ -1828,6 +1852,8 @@ let contributors = [
   { icon:'▦', issue:'Data Matrix Issue', tool:'KLAT790-0036', count: 30 },
   { icon:'⋯', issue:'Others (Laser, VA etc.)', tool:'KLAT790-0090', count: 29 },
 ];
+let contributorSourceRows = contributors.map(item => ({ ...item, week: 'WW21' }));
+let selectedContributorWeek = 'WW21';
 
 let insights = [
   { title:'Mark Invalid', icon:'📊', text:'is the top contributor across all shifts. Shift D has the highest mentions (68).' },
@@ -2320,6 +2346,47 @@ function rowValue(row, names) {
   return '';
 }
 
+function normalizeContributorWeek(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const wwMatch = raw.match(/ww\s*([0-9]{1,2}(?:\s*\/\s*[0-9]{1,2})?)/i);
+  if (wwMatch) return `WW${wwMatch[1].replace(/\s+/g, '')}`;
+  const numericMatch = raw.match(/^[0-9]{1,2}$/);
+  if (numericMatch) return `WW${raw.padStart(2, '0')}`;
+  return raw;
+}
+
+function contributorWeekFromRow(row) {
+  return normalizeContributorWeek(rowValue(row, ['ww', 'week', 'work week', 'workweek'])) || normalizeContributorWeek(appState.week) || 'WW--';
+}
+
+function sortContributorWeeks(weeks) {
+  return weeks.slice().sort((a, b) => {
+    const aNum = Number((String(a).match(/[0-9]+/) || [Number.MAX_SAFE_INTEGER])[0]);
+    const bNum = Number((String(b).match(/[0-9]+/) || [Number.MAX_SAFE_INTEGER])[0]);
+    return aNum === bNum ? String(a).localeCompare(String(b)) : aNum - bNum;
+  });
+}
+
+function getVisibleContributors() {
+  const filtered = contributorSourceRows.filter(item => item.week === selectedContributorWeek);
+  const rows = filtered.length ? filtered : contributorSourceRows;
+  return rows
+    .slice()
+    .sort((a, b) => Number(b.count) - Number(a.count))
+    .slice(0, 3);
+}
+
+function renderContributorWeekOptions() {
+  const select = document.getElementById('weekFilter');
+  if (!select) return;
+  const weeks = sortContributorWeeks(Array.from(new Set(contributorSourceRows.map(item => item.week).filter(Boolean))));
+  if (!weeks.length) weeks.push(normalizeContributorWeek(appState.week) || 'WW--');
+  if (!weeks.includes(selectedContributorWeek)) selectedContributorWeek = weeks[0];
+  select.innerHTML = weeks.map(week => `<option value="${escapeHtml(week)}">${escapeHtml(week)}</option>`).join('');
+  select.value = selectedContributorWeek;
+}
+
 function normalizeDateValue(value) {
   if (!value) return '';
   if (value instanceof Date) return dateKey(value);
@@ -2379,6 +2446,7 @@ function applyIssueRows(rows) {
       tool: String(rowValue(row, ['tool', 'tools', 'triggered tool']) || '').trim(),
       count,
       shifts,
+      week: contributorWeekFromRow(row),
     };
   }).filter(item => item.issue || item.tool || item.count);
 
@@ -2389,11 +2457,9 @@ function applyIssueRows(rows) {
     trendData[shift] = imported.map(item => item.shifts[shiftIndex]);
   });
 
-  contributors = imported
-    .slice()
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3)
-    .map(item => ({ icon: item.icon, issue: item.issue, tool: item.tool, count: item.count }));
+  contributorSourceRows = imported.map(item => ({ icon: item.icon, issue: item.issue, tool: item.tool, count: item.count, week: item.week }));
+  selectedContributorWeek = contributorSourceRows[0]?.week || selectedContributorWeek;
+  contributors = getVisibleContributors();
 
   const totalMentions = imported.reduce((sum, item) => sum + item.count, 0);
   if (totalMentions > 0) updateDashboardState({ threads: totalMentions });
@@ -2528,9 +2594,12 @@ function applyRowsFromSheet(rows, sheetName = '') {
       issue: String(rowValue(row, ['issue', 'issues']) || '').trim(),
       tool: String(rowValue(row, ['tool', 'tools']) || '').trim(),
       count: Number(rowValue(row, ['count', 'total', 'mentions'])) || 0,
+      week: contributorWeekFromRow(row),
     })).filter(item => item.issue || item.tool);
     if (imported.length) {
-      contributors = imported;
+      contributorSourceRows = imported;
+      selectedContributorWeek = contributorSourceRows[0]?.week || selectedContributorWeek;
+      contributors = getVisibleContributors();
       renderContributors();
       renderToolTriggerTrend();
     }
@@ -2713,11 +2782,12 @@ function openOnholdDetails() {
   document.getElementById('onholdModalSummary').textContent = `${current.toLocaleString()} lots / ${formatOnholdWip(currentWip)} WIP this week`;
   document.getElementById('onholdOwnerList').innerHTML = onholdOwners.length
     ? onholdOwners.map(item => `
-        <div class="onhold-owner-row">
+        <a class="onhold-owner-row detail-link" href="${onholdDetailUrl(item)}" target="_blank" rel="noopener">
           <span class="font-bold">${escapeHtml(item.owner)}</span>
           <span class="text-right font-mono">${Math.round(Number(item.lots) || 0).toLocaleString()}</span>
           <span class="text-right font-mono">${formatOnholdWip(item.wip)}</span>
-        </div>
+          <span class="onhold-owner-open">Open</span>
+        </a>
       `).join('')
     : '<div class="rounded-2xl bg-gray-100 p-8 text-sm text-gray-500 mt-4">No owner breakdown added yet.</div>';
   document.getElementById('onholdModalBackdrop').classList.add('open');
@@ -2725,6 +2795,18 @@ function openOnholdDetails() {
 
 function closeOnholdDetails() {
   document.getElementById('onholdModalBackdrop').classList.remove('open');
+}
+
+function onholdDetailUrl(item) {
+  const params = new URLSearchParams({
+    owner: item.owner || 'Unassigned',
+    lots: Math.round(Number(item.lots) || 0),
+    wip: Number(item.wip) || 0,
+    week: appState.week,
+    totalLots: Math.max(0, Math.round(Number(appState.onholdCurrent) || 0)),
+    totalWip: Math.max(0, Number(appState.onholdCurrentWip) || 0),
+  });
+  return `./Post%20E%20Onhold%20Details.html?${params.toString()}`;
 }
 
 ['onholdLotsCard', 'onholdStatusCard'].forEach(id => {
@@ -3390,19 +3472,20 @@ window.addEventListener('keydown', event => {
 /* ---------- CONTRIBUTORS TABLE ---------- */
 function renderContributors() {
   const tbody = document.getElementById('contribTable');
+  renderContributorWeekOptions();
+  contributors = getVisibleContributors();
   tbody.innerHTML = '';
   contributors.forEach((c, i) => {
     const row = document.createElement('tr');
     row.className = 'slide-in hover:bg-gray-50 transition';
     row.style.animationDelay = `${i * 100}ms`;
     row.innerHTML = `
-      <td class="py-4 flex items-center gap-3">
-        <div class="w-9 h-9 bg-black text-white rounded-lg flex items-center justify-center font-bold">${c.icon}</div>
-        <span class="font-medium">${c.issue}</span>
+      <td class="py-4">
+        <span class="font-medium">${escapeHtml(c.issue)}</span>
       </td>
-      <td class="py-4 font-mono text-sm text-gray-700">${c.tool}</td>
+      <td class="py-4 font-mono text-sm text-gray-700">${escapeHtml(c.tool)}</td>
       <td class="py-4 text-right">
-        <span class="inline-block bg-black text-white text-xs font-bold px-3 py-1 rounded-full">${c.count}</span>
+        <span class="inline-block bg-black text-white text-xs font-bold px-3 py-1 rounded-full">${escapeHtml(c.count)}</span>
       </td>`;
     tbody.appendChild(row);
   });
@@ -3629,14 +3712,9 @@ document.getElementById('randomizeBtn').addEventListener('click', () => {
 
 /* ---------- WEEK FILTER ---------- */
 document.getElementById('weekFilter').addEventListener('change', (e) => {
-  // Slight data variation per week
-  const factor = e.target.value === 'ww22' ? 0.9 : e.target.value === 'ww23' ? 1.15 : 1;
-  ['A','B','C','D'].forEach(s => {
-    trendData[s] = trendData[s].map(v => Math.round(v * factor));
-  });
-  buildInsightsFromTrend();
-  renderInsights();
-  refreshTrendChart();
+  selectedContributorWeek = e.target.value;
+  renderContributors();
+  renderToolTriggerTrend();
 });
 
 /* ---------- SUMMARY CASES + STATUS TOGGLE ---------- */
