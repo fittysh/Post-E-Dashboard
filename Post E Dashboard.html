@@ -1298,9 +1298,8 @@
               </div>
               <span class="text-xs bg-gray-100 px-3 py-1 rounded-full font-medium">Post E Plan</span>
             </div>
-            <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Post e Total WIP</p>
+            <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Target WIP</p>
             <h2 id="wipKpi" class="kpi-num text-6xl font-bold mt-1" data-target="15.2" data-suffix="M">0M</h2>
-            <div class="progress-bar mt-4"><div class="progress-fill" style="width:0%" data-width="82%"></div></div>
           </div>
 
           <!-- KPI Total Threads -->
@@ -1313,7 +1312,6 @@
             </div>
             <p class="text-xs uppercase tracking-wider text-gray-400 font-semibold">Microsoft Team Total Threads</p>
             <h2 id="threadsKpi" class="kpi-num text-6xl font-bold mt-1" data-target="406" data-suffix="">0</h2>
-            <div class="progress-bar mt-4 bg-white/20"><div class="progress-fill bg-white" style="width:0%" data-width="64%"></div></div>
           </div>
         </div>
       </section>
@@ -1863,13 +1861,13 @@ let insights = [
 ];
 
 let cases = [
-  { id:1, icon:'🏛', category:'MRB', count:2, status:'ongoing',
+  { id:1, icon:'./Assets/case-study.png', category:'MRB', count:2, status:'ongoing',
     items:[
       'MRB | Post E | Dropped Lots at Cargo Lift M4 and discuss about lot disposition. (5 lots pending reroute to QA27 for retest)',
       'MRB | Post E | Laser Marking | JDZN3HJ.11 Mark Off Center — Disposition: Proceed to release after MCRS raise.'
     ]
   },
-  { id:2, icon:'🔍', category:'AQL Finding', count:1, status:'pending',
+  { id:2, icon:'./Assets/searching.png', category:'AQL Finding', count:1, status:'pending',
     items:[
       '1 AQL Finding — QDR Finding | Additional Lot with Marker Marking on Unit | JDKHTZJ.11. Pending QA calling meeting with REL team.'
     ]
@@ -1880,7 +1878,7 @@ let cases = [
       '2DID shortage from Assembly MMP — DONE MRB with QA and Assembly. Proceed for reassociation at Burn2.'
     ]
   },
-  { id:4, icon:'📊', category:'Total On Hold Lots', count:1, status:'ongoing',
+  { id:4, icon:'./Assets/growth.png', category:'Total On Hold Lots', count:1, status:'ongoing',
     items:[
       '179 lots with 68k WIP (Majority on hold under SafetyNet aging and valid reject from Scanner).'
     ]
@@ -3748,7 +3746,7 @@ function renderCases() {
     card.innerHTML = `
       <div class="flex items-start justify-between gap-4">
         <div class="flex gap-4 flex-1">
-          <div class="w-14 h-14 bg-black text-white rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${c.icon}</div>
+          <div class="w-14 h-14 bg-black text-white rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${caseIconMarkup(c.icon)}</div>
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-2">
               <h4 class="font-bold uppercase tracking-wide">${c.category}</h4>
@@ -3794,6 +3792,14 @@ function updateGlance() {
   document.getElementById('completionText').textContent = pct + '% closed';
 }
 
+// Render a case icon as an <img> when it's an image path, otherwise as emoji/text
+function caseIconMarkup(icon) {
+  if (typeof icon === 'string' && /\.(png|jpe?g|svg|gif|webp)$/i.test(icon)) {
+    return `<img src="${icon}" alt="" class="w-9 h-9 object-contain pointer-events-none" />`;
+  }
+  return escapeHtml(icon);
+}
+
 function renderCases() {
   const container = document.getElementById('casesContainer');
   container.innerHTML = '';
@@ -3809,7 +3815,7 @@ function renderCases() {
     card.innerHTML = `
       <div class="flex items-start justify-between gap-4">
         <div class="flex gap-4 flex-1">
-          <div class="summary-icon ${accent} w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${escapeHtml(c.icon)}</div>
+          <div class="summary-icon ${accent} w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${caseIconMarkup(c.icon)}</div>
           <div class="flex-1">
             <div class="flex flex-wrap items-center gap-2 mb-2">
               <h4 class="font-bold uppercase tracking-wide">${escapeHtml(c.category)}</h4>
