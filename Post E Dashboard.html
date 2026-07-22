@@ -519,6 +519,7 @@
   #overview { order: 10; }
   #dashboardBreakdown { order: 20; }
   #trend { order: 30; }
+  #responseTime { order: 35; }
   #summary { order: 40; }
   #feedbackIssues { order: 50; }
   #onholdTrend { order: 60; }
@@ -951,6 +952,84 @@
   .summary-icon.status-pending-card { background: #facc15; color: #0a0a0a; }
   .summary-icon.status-ongoing-card { background: #dbeafe; color: #1d4ed8; }
   .summary-icon.status-closed-card { background: #dcfce7; color: #166534; }
+
+  /* ---------- Per-item case progress ---------- */
+  .case-item-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .case-item-text {
+    display: flex;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
+  .case-item-text.done > span:last-child {
+    text-decoration: line-through;
+    color: #9ca3af;
+  }
+  .case-item-status {
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .case-item-status:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+  .case-item-status:active { transform: scale(0.96); }
+  .case-item-status::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    margin-right: 6px;
+    vertical-align: middle;
+    background: currentColor;
+  }
+  .case-item-status.pending { background: #fefce8; color: #854d0e; border-color: #fde68a; }
+  .case-item-status.ongoing { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .case-item-status.closed { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+
+  .case-seg {
+    display: inline-flex;
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .case-seg-btn {
+    border: 0;
+    background: transparent;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .case-seg-btn + .case-seg-btn { border-left: 1px solid #e5e5e5; }
+  .case-seg-btn:hover { background: #f5f5f5; }
+  .case-seg-btn.active.pending { background: #facc15; color: #0a0a0a; }
+  .case-seg-btn.active.ongoing { background: #1d4ed8; color: #fff; }
+  .case-seg-btn.active.closed { background: #166534; color: #fff; }
+  .case-progress-line { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+  .case-modal-item {
+    border: 1px solid #e5e5e5;
+    border-radius: 16px;
+    padding: 12px 14px;
+    transition: border-color 0.2s ease;
+  }
+  .case-modal-item.closed { border-color: #bbf7d0; background: #f7fef9; }
+  .case-modal-item.ongoing { border-color: #bfdbfe; background: #f7faff; }
   .summary-photo-input {
     border: 1px dashed #d4d4d4;
     border-radius: 16px;
@@ -1192,6 +1271,10 @@
       <a href="#trend" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-600">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
         Trend Analysis
+      </a>
+      <a href="#responseTime" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-600">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        Response Time
       </a>
       <a href="#summary" class="nav-item flex items-center gap-3 px-6 py-3 text-sm font-medium text-gray-600">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
@@ -1516,6 +1599,155 @@
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white text-sm font-bold">📅</div>
               <div><p class="text-xl font-bold" data-week-label>WW21/22</p><p class="text-xs text-gray-500">Time Period</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== RESPONSE TIME ANALYTICS ===== -->
+      <section id="responseTime" class="reveal">
+        <div class="card bg-white border border-gray-200 rounded-3xl p-8">
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
+            <div>
+              <span class="inline-block bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Response Time Analytics</span>
+              <h3 class="text-3xl font-bold mt-3">Triggering Log → System Binning Delay</h3>
+              <p class="text-gray-500 text-sm mt-1">Gap between QDR triggering log (Teams) and <span class="font-semibold text-gray-700">BinRecordedDT</span> for lots matched by Lot ID · QDR Scanning Shift C</p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+              <label class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500">
+                Target
+                <select id="responseSlaSelect" class="bg-gray-100 border-0 rounded-full px-4 py-2 text-sm font-medium outline-none cursor-pointer text-gray-900" aria-label="Response time target threshold">
+                  <option value="10">&le; 10 min</option>
+                  <option value="20" selected>&le; 20 min</option>
+                  <option value="30">&le; 30 min</option>
+                  <option value="60">&le; 60 min</option>
+                </select>
+              </label>
+              <button id="responseImportBtn" class="action-btn primary" type="button">Import CSV</button>
+              <button id="responseExportBtn" class="action-btn secondary" type="button">Export CSV</button>
+              <input id="responseImportInput" class="hidden" type="file" accept=".csv,.xlsx,.xls">
+            </div>
+          </div>
+
+          <!-- KPI row -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="card bg-white border border-gray-200 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Matched</span>
+              </div>
+              <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Matched Lots</p>
+              <h4 id="responseMatchedKpi" class="kpi-num text-4xl font-bold mt-1">0</h4>
+              <p id="responseMatchedSub" class="text-xs text-gray-400 mt-1">trigger &harr; bin pairs</p>
+            </div>
+
+            <div class="card bg-white border border-gray-200 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Average</span>
+              </div>
+              <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Avg Response</p>
+              <h4 id="responseAvgKpi" class="kpi-num text-4xl font-bold mt-1">--</h4>
+              <p id="responseMedianSub" class="text-xs text-gray-400 mt-1">Median --</p>
+            </div>
+
+            <div class="card bg-white border border-gray-200 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">On Time</span>
+              </div>
+              <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Within Target</p>
+              <h4 id="responseWithinKpi" class="kpi-num text-4xl font-bold mt-1">--</h4>
+              <p id="responseWithinSub" class="text-xs text-gray-400 mt-1">0 of 0 lots on time</p>
+            </div>
+
+            <div class="card bg-white border border-gray-200 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                  <svg width="18" height="18" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Worst</span>
+              </div>
+              <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold">Longest Delay</p>
+              <h4 id="responseLongestKpi" class="kpi-num text-4xl font-bold mt-1">--</h4>
+              <p id="responseLongestSub" class="text-xs text-gray-400 mt-1">&mdash;</p>
+            </div>
+          </div>
+
+          <!-- Chart + insights -->
+          <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 lg:col-span-8 bg-gray-50 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-3">
+                <span class="bg-black text-white text-xs font-bold px-4 py-1 rounded-full">Response Time Distribution</span>
+                <span id="responseBreachPill" class="text-xs bg-white border border-gray-300 px-3 py-1.5 rounded-full">0 delayed</span>
+              </div>
+              <div style="height: 320px;">
+                <canvas id="responseDistChart"></canvas>
+              </div>
+              <p class="text-xs text-gray-400 mt-3">Bars beyond the selected target are highlighted as breaches. Each bar counts lots whose trigger&rarr;bin gap falls in that range.</p>
+            </div>
+
+            <div class="col-span-12 lg:col-span-4 space-y-3">
+              <div class="text-center mb-2">
+                <span class="bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Top Delays</span>
+              </div>
+              <div id="responseInsights" class="space-y-3"></div>
+            </div>
+          </div>
+
+          <!-- Lot-level table -->
+          <div class="mt-6 pt-6 border-t border-gray-200">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+              <h4 class="font-bold uppercase tracking-wider text-sm">Lot-Level Response Log</h4>
+              <div class="flex items-center gap-2">
+                <span id="responseTableCount" class="text-xs bg-gray-100 px-3 py-1.5 rounded-full text-gray-600">0 lots</span>
+                <button id="toggleResponseInputBtn" class="action-btn secondary" type="button">Edit Data</button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[760px]">
+                <thead>
+                  <tr class="border-b-2 border-black">
+                    <th class="text-left py-3 text-xs uppercase tracking-wider font-bold">Lot ID</th>
+                    <th class="text-left py-3 text-xs uppercase tracking-wider font-bold">Machine</th>
+                    <th class="text-left py-3 text-xs uppercase tracking-wider font-bold">Issue Type</th>
+                    <th class="text-left py-3 text-xs uppercase tracking-wider font-bold">Triggered</th>
+                    <th class="text-left py-3 text-xs uppercase tracking-wider font-bold">Bin Recorded</th>
+                    <th class="text-right py-3 text-xs uppercase tracking-wider font-bold">Response</th>
+                    <th class="text-right py-3 text-xs uppercase tracking-wider font-bold">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="responseTableBody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Data input (collapsible) -->
+          <div id="responseInputBody" class="collapsible-body minimized mt-6" style="max-height: 640px;">
+            <div class="bg-gray-50 rounded-2xl p-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <label class="block">
+                <span class="text-xs uppercase tracking-wider font-bold text-gray-500">Triggering Log &mdash; Lot, DateTime, Machine, Issue, Reported By</span>
+                <textarea id="responseTriggerInput" class="field mt-2 min-h-40 resize-y font-mono text-xs" spellcheck="false"></textarea>
+              </label>
+              <label class="block">
+                <span class="text-xs uppercase tracking-wider font-bold text-gray-500">Bin Records &mdash; Lot, BinRecordedDT</span>
+                <textarea id="responseBinInput" class="field mt-2 min-h-40 resize-y font-mono text-xs" spellcheck="false"></textarea>
+              </label>
+              <div class="lg:col-span-2 flex flex-wrap items-center gap-3">
+                <button id="responseApplyBtn" class="action-btn primary" type="button">Apply &amp; Recompute</button>
+                <button id="responseImportBtn2" class="action-btn secondary" type="button">Import CSV / Excel</button>
+                <button id="responseSampleBtn" class="action-btn secondary" type="button">Load Sample Data</button>
+                <button id="responseClearBtn" class="action-btn secondary" type="button">Clear</button>
+                <span id="responseInputStatus" class="text-xs text-gray-500"></span>
+              </div>
+              <p class="lg:col-span-2 text-xs text-gray-400">Paste format: <span class="font-mono">Lot, YYYY-MM-DD HH:MM, ...</span>. Or use <span class="font-semibold text-gray-600">Import CSV / Excel</span> to auto-detect <span class="font-mono">Lot ID</span>, <span class="font-mono">Date</span>+<span class="font-mono">Time</span> and <span class="font-mono">BinRecordedDT</span> columns — upload the triggering log and bin export (separately or combined); lots are joined by Lot ID.</p>
             </div>
           </div>
         </div>
@@ -1861,26 +2093,26 @@ let insights = [
 ];
 
 let cases = [
-  { id:1, icon:'./Assets/case-study.png', category:'MRB', count:2, status:'ongoing',
+  { id:1, icon:'./Assets/case-study.png', category:'MRB',
     items:[
-      'MRB | Post E | Dropped Lots at Cargo Lift M4 and discuss about lot disposition. (5 lots pending reroute to QA27 for retest)',
-      'MRB | Post E | Laser Marking | JDZN3HJ.11 Mark Off Center — Disposition: Proceed to release after MCRS raise.'
+      { text:'MRB | Post E | Dropped Lots at Cargo Lift M4 and discuss about lot disposition. (5 lots pending reroute to QA27 for retest)', status:'ongoing' },
+      { text:'MRB | Post E | Laser Marking | JDZN3HJ.11 Mark Off Center — Disposition: Proceed to release after MCRS raise.', status:'closed' }
     ]
   },
-  { id:2, icon:'./Assets/searching.png', category:'AQL Finding', count:1, status:'pending',
+  { id:2, icon:'./Assets/searching.png', category:'AQL Finding',
     items:[
-      '1 AQL Finding — QDR Finding | Additional Lot with Marker Marking on Unit | JDKHTZJ.11. Pending QA calling meeting with REL team.'
+      { text:'1 AQL Finding — QDR Finding | Additional Lot with Marker Marking on Unit | JDKHTZJ.11. Pending QA calling meeting with REL team.', status:'pending' }
     ]
   },
-  { id:3, icon:'🛡', category:'SafetyNet Issue', count:2, status:'closed',
+  { id:3, icon:'🛡', category:'SafetyNet Issue',
     items:[
-      'Few lots triggered no SafetyNet for NC23M Series — Proceed release with BYPASS PE SAFETYNET = YES.',
-      '2DID shortage from Assembly MMP — DONE MRB with QA and Assembly. Proceed for reassociation at Burn2.'
+      { text:'Few lots triggered no SafetyNet for NC23M Series — Proceed release with BYPASS PE SAFETYNET = YES.', status:'closed' },
+      { text:'2DID shortage from Assembly MMP — DONE MRB with QA and Assembly. Proceed for reassociation at Burn2.', status:'closed' }
     ]
   },
-  { id:4, icon:'./Assets/growth.png', category:'Total On Hold Lots', count:1, status:'ongoing',
+  { id:4, icon:'./Assets/growth.png', category:'Total On Hold Lots',
     items:[
-      '179 lots with 68k WIP (Majority on hold under SafetyNet aging and valid reject from Scanner).'
+      { text:'179 lots with 68k WIP (Majority on hold under SafetyNet aging and valid reject from Scanner).', status:'ongoing' }
     ]
   },
 ];
@@ -2738,7 +2970,7 @@ function downloadCsv() {
   ['A','B','C','D'].forEach(shift => {
     trendData[shift].forEach((value, index) => rows.push(['Trend', `Shift ${shift}`, issueTypes[index], value]));
   });
-  cases.forEach(item => rows.push(['Case', item.category, item.status, item.items.join(' | ')]));
+  cases.forEach(item => item.items.forEach(it => rows.push(['Case', item.category, it.status, it.text])));
   const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
@@ -3736,61 +3968,7 @@ function saveCaseMedia() {
   localStorage.setItem('postECaseMedia', JSON.stringify(caseMedia));
 }
 
-function renderCases() {
-  const container = document.getElementById('casesContainer');
-  container.innerHTML = '';
-  cases.forEach((c, i) => {
-    const card = document.createElement('div');
-    card.className = 'card bg-white border border-gray-200 rounded-3xl p-6 reveal visible';
-    card.style.animationDelay = `${i * 150}ms`;
-    card.innerHTML = `
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex gap-4 flex-1">
-          <div class="w-14 h-14 bg-black text-white rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${caseIconMarkup(c.icon)}</div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <h4 class="font-bold uppercase tracking-wide">${c.category}</h4>
-              <span class="bg-gray-100 text-xs font-bold px-2 py-0.5 rounded-full">${c.count} CASE${c.count>1?'S':''}</span>
-            </div>
-            <ul class="space-y-2">
-              ${c.items.map(it => `<li class="text-sm text-gray-700 flex gap-2"><span class="text-black mt-1">•</span><span>${it}</span></li>`).join('')}
-            </ul>
-          </div>
-        </div>
-        <button class="status-btn status-${c.status} text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" data-id="${c.id}">
-          ${statusLabels[c.status]}
-        </button>
-      </div>
-    `;
-    container.appendChild(card);
-  });
-
-  // Bind toggle
-  document.querySelectorAll('.status-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = parseInt(btn.dataset.id);
-      const item = cases.find(c => c.id === id);
-      const idx = statusOrder.indexOf(item.status);
-      item.status = statusOrder[(idx + 1) % statusOrder.length];
-      renderCases();
-      updateGlance();
-    });
-  });
-}
-
-function updateGlance() {
-  const total = cases.reduce((a,c) => a + c.count, 0);
-  const closed = cases.filter(c => c.status==='closed').reduce((a,c)=>a+c.count,0);
-  const ongoing = cases.filter(c => c.status==='ongoing').reduce((a,c)=>a+c.count,0);
-  const pending = cases.filter(c => c.status==='pending').reduce((a,c)=>a+c.count,0);
-  document.getElementById('totalCases').textContent = total;
-  document.getElementById('closedCount').textContent = closed;
-  document.getElementById('ongoingCount').textContent = ongoing;
-  document.getElementById('pendingCount').textContent = pending;
-  const pct = Math.round((closed/total)*100);
-  document.getElementById('completionBar').style.width = pct + '%';
-  document.getElementById('completionText').textContent = pct + '% closed';
-}
+const itemStatusLabels = { pending:'Pending', ongoing:'In Progress', closed:'Done' };
 
 // Render a case icon as an <img> when it's an image path, otherwise as emoji/text
 function caseIconMarkup(icon) {
@@ -3800,11 +3978,78 @@ function caseIconMarkup(icon) {
   return escapeHtml(icon);
 }
 
+/* Each item is { text, status }. Convert legacy string items and apply any saved per-item statuses. */
+function normalizeCaseItems() {
+  const stored = readStoredJson('postECaseItemStatus', {}, value => value && typeof value === 'object' && !Array.isArray(value));
+  cases.forEach(c => {
+    c.items = (c.items || []).map(it => {
+      if (typeof it === 'string') return { text: it, status: c.status || 'ongoing' };
+      return { text: it.text || '', status: statusOrder.includes(it.status) ? it.status : (c.status || 'ongoing') };
+    });
+    const saved = stored[caseStorageKey(c)];
+    if (Array.isArray(saved)) {
+      c.items.forEach((it, i) => { if (statusOrder.includes(saved[i])) it.status = saved[i]; });
+    }
+    c.count = c.items.length;
+    c.status = deriveCaseStatus(c);
+  });
+}
+
+function caseItemCounts(c) {
+  const counts = { pending: 0, ongoing: 0, closed: 0, total: c.items.length };
+  c.items.forEach(it => { counts[it.status] = (counts[it.status] || 0) + 1; });
+  return counts;
+}
+
+function deriveCaseStatus(c) {
+  const { closed, ongoing, total } = caseItemCounts(c);
+  if (total && closed === total) return 'closed';
+  if (ongoing > 0 || closed > 0) return 'ongoing';
+  return 'pending';
+}
+
+function saveCaseItemStatuses() {
+  const map = {};
+  cases.forEach(c => { map[caseStorageKey(c)] = c.items.map(it => it.status); });
+  try {
+    localStorage.setItem('postECaseItemStatus', JSON.stringify(map));
+  } catch (error) {
+    console.warn('Unable to persist case progress', error);
+  }
+}
+
+function setCaseItemStatus(caseId, index, status) {
+  const c = cases.find(x => String(x.id) === String(caseId));
+  if (!c || !c.items[index] || !statusOrder.includes(status)) return;
+  c.items[index].status = status;
+  c.status = deriveCaseStatus(c);
+  saveCaseItemStatuses();
+  renderCases();
+  updateGlance();
+  if (activeCaseId != null && String(activeCaseId) === String(caseId)) {
+    refreshCaseModal(c);
+  }
+}
+
+function cycleCaseItemStatus(caseId, index) {
+  const c = cases.find(x => String(x.id) === String(caseId));
+  if (!c || !c.items[index]) return;
+  const nextIndex = (statusOrder.indexOf(c.items[index].status) + 1) % statusOrder.length;
+  setCaseItemStatus(caseId, index, statusOrder[nextIndex]);
+}
+
+function caseItemStatusPill(caseId, index, status) {
+  return `<button type="button" class="case-item-status ${status}" data-item-status data-case="${escapeHtml(caseId)}" data-index="${index}" title="Click to change progress">${itemStatusLabels[status] || status}</button>`;
+}
+
 function renderCases() {
   const container = document.getElementById('casesContainer');
   container.innerHTML = '';
   cases.forEach((c, i) => {
-    const accent = statusAccentClasses[c.status] || statusAccentClasses.ongoing;
+    const derived = deriveCaseStatus(c);
+    const accent = statusAccentClasses[derived] || statusAccentClasses.ongoing;
+    const counts = caseItemCounts(c);
+    const pct = counts.total ? Math.round((counts.closed / counts.total) * 100) : 0;
     const photoCount = getCaseImages(c).length;
     const card = document.createElement('div');
     card.className = `summary-case ${accent} card border rounded-3xl p-6 reveal visible`;
@@ -3814,65 +4059,98 @@ function renderCases() {
     card.style.animationDelay = `${i * 150}ms`;
     card.innerHTML = `
       <div class="flex items-start justify-between gap-4">
-        <div class="flex gap-4 flex-1">
+        <div class="flex gap-4 flex-1 min-w-0">
           <div class="summary-icon ${accent} w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0">${caseIconMarkup(c.icon)}</div>
-          <div class="flex-1">
-            <div class="flex flex-wrap items-center gap-2 mb-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-3">
               <h4 class="font-bold uppercase tracking-wide">${escapeHtml(c.category)}</h4>
-              <span class="bg-white/80 text-xs font-bold px-2 py-0.5 rounded-full">${c.count} CASE${c.count>1?'S':''}</span>
-              ${photoCount ? `<span class="bg-white/80 text-xs font-bold px-2 py-0.5 rounded-full">${photoCount} PHOTO${photoCount>1?'S':''}</span>` : ''}
+              <span class="bg-white/80 text-xs font-bold px-2 py-0.5 rounded-full">${counts.total} CASE${counts.total > 1 ? 'S' : ''}</span>
+              ${photoCount ? `<span class="bg-white/80 text-xs font-bold px-2 py-0.5 rounded-full">${photoCount} PHOTO${photoCount > 1 ? 'S' : ''}</span>` : ''}
             </div>
             <ul class="space-y-2">
-              ${c.items.map(it => `<li class="text-sm text-gray-700 flex gap-2"><span class="text-black mt-1">-</span><span>${escapeHtml(it)}</span></li>`).join('')}
+              ${c.items.map((it, idx) => `
+                <li class="case-item-row">
+                  <span class="case-item-text ${it.status === 'closed' ? 'done' : ''} text-sm text-gray-700"><span class="text-black mt-1">-</span><span>${escapeHtml(it.text)}</span></span>
+                  ${caseItemStatusPill(c.id, idx, it.status)}
+                </li>`).join('')}
             </ul>
           </div>
         </div>
-        <button class="status-btn status-${c.status} text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap" data-id="${c.id}">
-          ${statusLabels[c.status]}
-        </button>
+        <span class="status-${derived} text-xs font-bold px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0">${statusLabels[derived]}</span>
+      </div>
+      <div class="case-progress-line">
+        <div class="progress-bar flex-1"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <span class="text-xs font-bold text-gray-500 whitespace-nowrap">${counts.closed}/${counts.total} done</span>
       </div>
     `;
     container.appendChild(card);
   });
+}
 
-  document.querySelectorAll('[data-case-id]').forEach(card => {
-    card.addEventListener('click', event => {
-      if (event.target.closest('.status-btn')) return;
-      openCaseDetails(card.dataset.caseId);
+function bindCaseInteractions() {
+  const container = document.getElementById('casesContainer');
+  if (container && !container.dataset.bound) {
+    container.dataset.bound = 'true';
+    container.addEventListener('click', event => {
+      const pill = event.target.closest('[data-item-status]');
+      if (pill) {
+        event.stopPropagation();
+        cycleCaseItemStatus(pill.dataset.case, Number(pill.dataset.index));
+        return;
+      }
+      const card = event.target.closest('[data-case-id]');
+      if (card) openCaseDetails(card.dataset.caseId);
     });
-    card.addEventListener('keydown', event => {
+    container.addEventListener('keydown', event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      event.preventDefault();
-      openCaseDetails(card.dataset.caseId);
+      if (event.target.closest('[data-item-status]')) return;
+      const card = event.target.closest('[data-case-id]');
+      if (card) { event.preventDefault(); openCaseDetails(card.dataset.caseId); }
     });
-  });
+  }
 
-  document.querySelectorAll('.status-btn').forEach(btn => {
-    btn.addEventListener('click', event => {
-      event.stopPropagation();
-      const item = cases.find(c => String(c.id) === String(btn.dataset.id));
-      if (!item) return;
-      const idx = statusOrder.indexOf(item.status);
-      item.status = statusOrder[(idx + 1) % statusOrder.length];
-      renderCases();
-      updateGlance();
+  const modalItems = document.getElementById('caseModalItems');
+  if (modalItems && !modalItems.dataset.bound) {
+    modalItems.dataset.bound = 'true';
+    modalItems.addEventListener('click', event => {
+      const btn = event.target.closest('[data-status]');
+      if (!btn) return;
+      setCaseItemStatus(btn.dataset.case, Number(btn.dataset.index), btn.dataset.status);
     });
-  });
+  }
+}
+
+function renderCaseModalItems(item) {
+  const list = document.getElementById('caseModalItems');
+  if (!list) return;
+  list.innerHTML = item.items.length
+    ? item.items.map((it, idx) => `
+      <li class="case-modal-item ${it.status}">
+        <p class="text-sm text-gray-700 flex gap-2"><span class="text-black mt-0.5">-</span><span>${escapeHtml(it.text)}</span></p>
+        <div class="case-seg mt-3" role="group" aria-label="Set progress">
+          ${statusOrder.map(status => `<button type="button" class="case-seg-btn ${status} ${it.status === status ? 'active' : ''}" data-status="${status}" data-case="${escapeHtml(item.id)}" data-index="${idx}">${itemStatusLabels[status]}</button>`).join('')}
+        </div>
+      </li>`).join('')
+    : '<li class="text-sm text-gray-500">No summary details added yet.</li>';
+}
+
+function refreshCaseModal(item) {
+  const derived = deriveCaseStatus(item);
+  const accent = statusAccentClasses[derived] || statusAccentClasses.ongoing;
+  const counts = caseItemCounts(item);
+  const statusEl = document.getElementById('caseModalStatus');
+  statusEl.className = `inline-block text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider summary-icon ${accent}`;
+  statusEl.textContent = statusLabels[derived] || 'ONGOING';
+  document.getElementById('caseModalTitle').textContent = item.category;
+  document.getElementById('caseModalMeta').textContent = `${counts.closed}/${counts.total} done · ${counts.ongoing} in progress · ${counts.pending} pending · ${appState.week}`;
+  renderCaseModalItems(item);
 }
 
 function openCaseDetails(id) {
   const item = cases.find(c => String(c.id) === String(id));
   if (!item) return;
   activeCaseId = item.id;
-  const accent = statusAccentClasses[item.status] || statusAccentClasses.ongoing;
-  const statusEl = document.getElementById('caseModalStatus');
-  statusEl.className = `inline-block text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider summary-icon ${accent}`;
-  statusEl.textContent = statusLabels[item.status] || 'ONGOING';
-  document.getElementById('caseModalTitle').textContent = item.category;
-  document.getElementById('caseModalMeta').textContent = `${item.count} case${item.count>1?'s':''} in ${appState.week}`;
-  document.getElementById('caseModalItems').innerHTML = item.items.length
-    ? item.items.map(text => `<li class="text-sm text-gray-700 flex gap-2"><span class="text-black mt-1">-</span><span>${escapeHtml(text)}</span></li>`).join('')
-    : '<li class="text-sm text-gray-500">No summary details added yet.</li>';
+  refreshCaseModal(item);
   renderCaseImages(item);
   document.getElementById('caseModalBackdrop').classList.add('open');
 }
@@ -3891,15 +4169,18 @@ function closeCaseDetails() {
 }
 
 function updateGlance() {
-  const total = cases.reduce((a,c) => a + c.count, 0);
-  const closed = cases.filter(c => c.status==='closed').reduce((a,c)=>a+c.count,0);
-  const ongoing = cases.filter(c => c.status==='ongoing').reduce((a,c)=>a+c.count,0);
-  const pending = cases.filter(c => c.status==='pending').reduce((a,c)=>a+c.count,0);
+  let total = 0, closed = 0, ongoing = 0, pending = 0;
+  cases.forEach(c => c.items.forEach(it => {
+    total += 1;
+    if (it.status === 'closed') closed += 1;
+    else if (it.status === 'ongoing') ongoing += 1;
+    else pending += 1;
+  }));
   document.getElementById('totalCases').textContent = total;
   document.getElementById('closedCount').textContent = closed;
   document.getElementById('ongoingCount').textContent = ongoing;
   document.getElementById('pendingCount').textContent = pending;
-  const pct = total ? Math.round((closed/total)*100) : 0;
+  const pct = total ? Math.round((closed / total) * 100) : 0;
   const completionBar = document.getElementById('completionBar');
   completionBar.style.width = pct + '%';
   completionBar.classList.remove('completion-fill-yellow', 'completion-fill-orange', 'completion-fill-green');
@@ -3917,6 +4198,8 @@ function updateGlance() {
   lastCompletionPct = pct;
 }
 
+normalizeCaseItems();
+bindCaseInteractions();
 renderCases();
 updateGlance();
 updateDashboardState();
@@ -3967,10 +4250,13 @@ function getShiftTotals() {
 }
 
 function getCaseStatusSummary() {
-  const total = cases.reduce((sum, item) => sum + item.count, 0);
-  const closed = cases.filter(item => item.status === 'closed').reduce((sum, item) => sum + item.count, 0);
-  const ongoing = cases.filter(item => item.status === 'ongoing').reduce((sum, item) => sum + item.count, 0);
-  const pending = cases.filter(item => item.status === 'pending').reduce((sum, item) => sum + item.count, 0);
+  let total = 0, closed = 0, ongoing = 0, pending = 0;
+  cases.forEach(c => (c.items || []).forEach(it => {
+    total += 1;
+    if (it.status === 'closed') closed += 1;
+    else if (it.status === 'ongoing') ongoing += 1;
+    else pending += 1;
+  }));
   const pct = total ? Math.round((closed / total) * 100) : 0;
   return { total, closed, ongoing, pending, pct };
 }
@@ -4129,7 +4415,7 @@ function answerDashboardQuestion(question) {
 
   if (/\b(case|cases|closed|ongoing|pending|mrb|aql|safetynet|safety net)\b/.test(q)) {
     return chatbotSectionResponse(
-      `Summary case status:\n- Total: ${snap.status.total}\n- Closed: ${snap.status.closed}\n- Ongoing: ${snap.status.ongoing}\n- Pending: ${snap.status.pending}\n- Closure: ${snap.status.pct}%\n\nCases:\n${chatbotLineList(cases, item => `- ${item.category}: ${item.count} case(s), ${statusLabels[item.status] || item.status}`)}`,
+      `Summary case status:\n- Total: ${snap.status.total}\n- Closed: ${snap.status.closed}\n- Ongoing: ${snap.status.ongoing}\n- Pending: ${snap.status.pending}\n- Closure: ${snap.status.pct}%\n\nCases:\n${chatbotLineList(cases, item => { const c = caseItemCounts(item); return `- ${item.category}: ${c.closed}/${c.total} done, ${statusLabels[deriveCaseStatus(item)] || item.status}`; })}`,
       'summary',
       'Go to Summary'
     );
@@ -4196,7 +4482,7 @@ function answerDashboardQuestion(question) {
   });
   if (/\b(case|cases|mrb|aql|safetynet|safety net)\b/.test(q)) {
     cases.forEach(item => {
-      if (textMatchesQuestion(`${item.category} ${item.items.join(' ')}`, terms)) matches.push(`Case: ${item.category} (${statusLabels[item.status] || item.status})`);
+      if (textMatchesQuestion(`${item.category} ${item.items.map(it => it.text).join(' ')}`, terms)) matches.push(`Case: ${item.category} (${statusLabels[deriveCaseStatus(item)] || item.status})`);
     });
   }
 
@@ -4276,6 +4562,543 @@ chatbotMessages.addEventListener('click', event => {
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && chatbotPanel.classList.contains('open')) closeChatbot();
 });
+
+/* ---------- RESPONSE TIME ANALYTICS ---------- */
+/* Sample matched lots (minute-scale gaps for a <20 min target). Trigger = QDR triggering log time, Bin = BinRecordedDT. */
+const responseSeedRows = [
+  { lot:'JFHG8BM.11', machine:'KLAT85', issue:'Mark Reject',             reportedBy:'Ram Pratap Singh',         trig:'2026-07-13T00:05:00', bin:'2026-07-13T00:11:00' },
+  { lot:'JF2XMBM.11', machine:'KLAT31', issue:'Subs Reject (3x rescan)', reportedBy:'Muhammad Amirul Ahmad',     trig:'2026-07-13T00:12:00', bin:'2026-07-13T00:59:00' },
+  { lot:'JF24HBM.11', machine:'KLAT85', issue:'Data Matrix Invalid',     reportedBy:'Ram Pratap Singh',         trig:'2026-07-13T00:28:00', bin:'2026-07-13T00:37:00' },
+  { lot:'JF88RBM.11', machine:'KLA85',  issue:'Mark Invalid',            reportedBy:'Muhammad Amirulamin Alyas', trig:'2026-07-13T01:56:00', bin:'2026-07-13T02:20:00' },
+  { lot:'JFM3VBM.11', machine:'KLAT39', issue:'Low Angle Reject',        reportedBy:'Bishal Kumar Mandal',      trig:'2026-07-13T01:58:00', bin:'2026-07-13T02:02:00' },
+  { lot:'JFMXXBM.11', machine:'KLAT37', issue:'Low Yield',               reportedBy:'Bishal Kumar Mandal',      trig:'2026-07-13T02:53:00', bin:'2026-07-13T04:21:00' },
+  { lot:'JFLQYBM.11', machine:'KLA93',  issue:'Mark Invalid',            reportedBy:'Azmira Hanim Binti Azmi',  trig:'2026-07-13T03:06:00', bin:'2026-07-13T03:20:00' },
+  { lot:'JF581CM.11', machine:'KLAT37', issue:'Low Yield',               reportedBy:'Bishal Kumar Mandal',      trig:'2026-07-13T03:26:00', bin:'2026-07-13T05:38:00' },
+  { lot:'JF14XBM.11', machine:'KLAT35', issue:'Pin 1 & Logo Reject',     reportedBy:'Sabin Ghimire',            trig:'2026-07-13T04:03:00', bin:'2026-07-13T04:10:00' },
+  { lot:'JF4LSBM.11', machine:'KLAT26', issue:'Mark Invalid',            reportedBy:'Ram Pratap Singh',         trig:'2026-07-13T04:09:00', bin:'2026-07-13T04:27:00' },
+  { lot:'JF7VHBM.11', machine:'MC36',   issue:'High Reject Mark 23',     reportedBy:'Rusmaria Binti Mokti',     trig:'2026-07-13T04:48:00', bin:'2026-07-13T05:29:00' },
+  { lot:'JFJBQBM.11', machine:'KLAT51', issue:'High Reject Mark',        reportedBy:'Farah Amalina Binti Azhar', trig:'2026-07-13T05:14:00', bin:'2026-07-13T05:26:00' },
+  { lot:'JFZCSBM.11', machine:'KLA95',  issue:'High Invalid Mark',       reportedBy:'Azmira Hanim Binti Azmi',  trig:'2026-07-13T06:04:00', bin:'2026-07-13T06:30:00' },
+  { lot:'JFYRVBM.11', machine:'KLAT38', issue:'Low Yield',               reportedBy:'Farah Amalina Binti Azhar', trig:'2026-07-13T06:38:00', bin:'2026-07-13T07:00:00' },
+  { lot:'JF1VTBM.11', machine:'KLAT35', issue:'Top Invalid',             reportedBy:'Sabin Ghimire',            trig:'2026-07-13T07:17:00', bin:'2026-07-13T07:52:00' },
+];
+
+const responseBuckets = [
+  { label: '≤ 10m', lo: 0,  hi: 10 },
+  { label: '10–20m', lo: 10, hi: 20 },
+  { label: '20–30m', lo: 20, hi: 30 },
+  { label: '30–60m', lo: 30, hi: 60 },
+  { label: '> 60m', lo: 60, hi: Infinity },
+];
+
+let responseTargetMinutes = Number(readStoredJson('postEResponseTargetMin', 20)) || 20;
+/* Maps are the source of truth so trigger-only or bin-only uploads can be joined by Lot ID. */
+let responseTriggerMap = new Map(); // lot -> { trig, machine, issue, reportedBy }
+let responseBinMap = new Map();     // lot -> binDateTimeString
+let responseImported = readStoredJson('postEResponseImported', false) === true;
+
+function normalizeResponseDT(value) {
+  return String(value || '').trim().replace(' ', 'T');
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function toLocalDTString(date) {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
+}
+
+/* Parse a single datetime cell: JS Date, Excel serial, or a string. */
+function parseResponseDateTime(value) {
+  if (value === null || value === undefined || value === '') return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  if (typeof value === 'number') {
+    if (window.XLSX && XLSX.SSF && XLSX.SSF.parse_date_code) {
+      const p = XLSX.SSF.parse_date_code(value);
+      if (p) return new Date(p.y, p.m - 1, p.d, p.H || 0, p.M || 0, Math.floor(p.S || 0));
+    }
+    return null;
+  }
+  const text = String(value).trim().replace('T', ' ');
+  if (!text || /not\s*processed/i.test(text)) return null;
+  const native = new Date(text);
+  return Number.isNaN(native.getTime()) ? null : native;
+}
+
+/* Combine a Date column with a separate Time column (both may be Date/serial/string). */
+function combineResponseDateTime(dateRaw, timeRaw) {
+  const base = parseResponseDateTime(dateRaw);
+  if (!base) return null;
+  if (timeRaw === '' || timeRaw === undefined || timeRaw === null) return base;
+  let h = 0, m = 0, s = 0;
+  if (timeRaw instanceof Date && !Number.isNaN(timeRaw.getTime())) {
+    h = timeRaw.getHours(); m = timeRaw.getMinutes(); s = timeRaw.getSeconds();
+  } else if (typeof timeRaw === 'number') {
+    const totalSec = Math.round((timeRaw % 1) * 86400);
+    h = Math.floor(totalSec / 3600); m = Math.floor((totalSec % 3600) / 60); s = totalSec % 60;
+  } else {
+    const match = String(timeRaw).trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?/i);
+    if (!match) return base;
+    h = Number(match[1]); m = Number(match[2]); s = match[3] ? Number(match[3]) : 0;
+    const ap = match[4] ? match[4].toLowerCase() : '';
+    if (ap === 'pm' && h < 12) h += 12;
+    if (ap === 'am' && h === 12) h = 0;
+  }
+  return new Date(base.getFullYear(), base.getMonth(), base.getDate(), h, m, s);
+}
+
+function formatResponseDuration(ms) {
+  if (!Number.isFinite(ms)) return '--';
+  const totalMinutes = Math.round(ms / 60000);
+  if (totalMinutes < 60) return `${totalMinutes}m`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}h ${pad2(minutes)}m`;
+}
+
+function formatResponseClock(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '--';
+  return date.toLocaleString('en-GB', {
+    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
+  }).replace(',', '');
+}
+
+function seedResponseMapsFromRows(rows) {
+  responseTriggerMap = new Map();
+  responseBinMap = new Map();
+  rows.forEach(row => {
+    const lot = String(row.lot || '').toUpperCase();
+    if (!lot) return;
+    responseTriggerMap.set(lot, { trig: row.trig, machine: row.machine || '', issue: row.issue || '', reportedBy: row.reportedBy || '' });
+    responseBinMap.set(lot, row.bin);
+  });
+}
+
+function joinResponseRows() {
+  const rows = [];
+  responseTriggerMap.forEach((trigger, lot) => {
+    const bin = responseBinMap.get(lot);
+    if (!bin) return;
+    rows.push({ lot, machine: trigger.machine || '', issue: trigger.issue || '', reportedBy: trigger.reportedBy || '', trig: trigger.trig, bin });
+  });
+  return rows;
+}
+
+function computeResponse() {
+  return joinResponseRows()
+    .map(row => {
+      const trigDate = new Date(normalizeResponseDT(row.trig));
+      const binDate = new Date(normalizeResponseDT(row.bin));
+      const valid = !Number.isNaN(trigDate.getTime()) && !Number.isNaN(binDate.getTime());
+      const gapMs = valid ? binDate - trigDate : NaN;
+      return { ...row, trigDate, binDate, gapMs, gapMinutes: gapMs / 60000 };
+    })
+    .filter(row => Number.isFinite(row.gapMs) && row.gapMs >= 0)
+    .sort((a, b) => b.gapMs - a.gapMs);
+}
+
+function bucketIndexFor(minutes) {
+  for (let i = 0; i < responseBuckets.length; i += 1) {
+    if (minutes < responseBuckets[i].hi) return i;
+  }
+  return responseBuckets.length - 1;
+}
+
+const responseDistChart = createChartSafely('responseDistChart', {
+  type: 'bar',
+  data: {
+    labels: responseBuckets.map(bucket => bucket.label),
+    datasets: [{
+      label: 'Lots',
+      data: responseBuckets.map(() => 0),
+      backgroundColor: responseBuckets.map(() => '#0a0a0a'),
+      borderRadius: 10,
+      barPercentage: 0.72,
+      categoryPercentage: 0.72,
+    }],
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 900, easing: 'easeOutCubic' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#000', titleColor: '#fff', bodyColor: '#fff',
+        padding: 12, cornerRadius: 12,
+        callbacks: {
+          label: context => `${context.parsed.y} lot${context.parsed.y === 1 ? '' : 's'}`,
+          afterLabel: context => (responseBuckets[context.dataIndex].lo >= responseTargetMinutes ? 'Beyond target' : 'Within target'),
+        },
+      },
+    },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#eee' }, ticks: { color: '#666', precision: 0 } },
+      x: { grid: { display: false }, ticks: { color: '#000', font: { weight: '700' } } },
+    },
+  },
+});
+
+function renderResponseInsights(rows) {
+  const list = document.getElementById('responseInsights');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!rows.length) {
+    list.innerHTML = '<div class="bg-gray-50 rounded-2xl p-4 text-sm text-gray-600">No matched lots yet. Import a CSV/Excel export or load the sample data to populate this view.</div>';
+    return;
+  }
+  rows.slice(0, 4).forEach((row, index) => {
+    const breached = row.gapMinutes > responseTargetMinutes;
+    const badge = row.gapMinutes < 60 ? `${Math.round(row.gapMinutes)}m` : `${Math.floor(row.gapMinutes / 60)}h`;
+    const div = document.createElement('div');
+    div.className = 'insight-card card bg-gray-50 rounded-2xl p-4 flex gap-3 cursor-pointer slide-in';
+    div.style.animationDelay = `${index * 120}ms`;
+    div.innerHTML = `
+      <div class="insight-icon w-10 h-10 ${breached ? 'bg-red-600' : 'bg-black'} text-white rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0">${badge}</div>
+      <div class="min-w-0">
+        <p class="font-bold text-sm font-mono truncate">${escapeHtml(row.lot)}</p>
+        <p class="text-xs text-gray-600 mt-1 leading-relaxed">${escapeHtml(row.machine)} &middot; ${escapeHtml(row.issue)} &mdash; <span class="font-semibold ${breached ? 'text-red-600' : 'text-gray-800'}">${formatResponseDuration(row.gapMs)}</span></p>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function renderResponseTable(rows) {
+  const tbody = document.getElementById('responseTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-sm text-gray-500">No matched lots to display.</td></tr>';
+    return;
+  }
+  rows.forEach((row, index) => {
+    const breached = row.gapMinutes > responseTargetMinutes;
+    const tr = document.createElement('tr');
+    tr.className = 'slide-in hover:bg-gray-50 transition';
+    tr.style.animationDelay = `${Math.min(index, 12) * 60}ms`;
+    tr.innerHTML = `
+      <td class="py-3 font-mono text-sm font-semibold">${escapeHtml(row.lot)}</td>
+      <td class="py-3 text-sm text-gray-700">${escapeHtml(row.machine)}</td>
+      <td class="py-3 text-sm text-gray-700">${escapeHtml(row.issue)}</td>
+      <td class="py-3 text-sm text-gray-500">${escapeHtml(formatResponseClock(row.trigDate))}</td>
+      <td class="py-3 text-sm text-gray-500">${escapeHtml(formatResponseClock(row.binDate))}</td>
+      <td class="py-3 text-right text-sm font-bold ${breached ? 'text-red-600' : 'text-gray-900'} kpi-num">${formatResponseDuration(row.gapMs)}</td>
+      <td class="py-3 text-right">
+        <span class="inline-block text-xs font-bold px-3 py-1 rounded-full border ${breached ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}">${breached ? 'Delayed' : 'On Time'}</span>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function persistResponse() {
+  try {
+    localStorage.setItem('postEResponseTriggers', JSON.stringify([...responseTriggerMap.entries()]));
+    localStorage.setItem('postEResponseBins', JSON.stringify([...responseBinMap.entries()]));
+    localStorage.setItem('postEResponseTargetMin', JSON.stringify(responseTargetMinutes));
+    localStorage.setItem('postEResponseImported', JSON.stringify(responseImported));
+  } catch (error) {
+    console.warn('Unable to persist response analytics', error);
+  }
+}
+
+function renderResponseAnalytics() {
+  const rows = computeResponse();
+  const count = rows.length;
+  const gaps = rows.map(row => row.gapMs);
+  const total = gaps.reduce((sum, value) => sum + value, 0);
+  const avgMs = count ? total / count : NaN;
+  const sorted = gaps.slice().sort((a, b) => a - b);
+  let medianMs = NaN;
+  if (count) {
+    const mid = Math.floor(count / 2);
+    medianMs = count % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  }
+  const targetMs = responseTargetMinutes * 60000;
+  const withinCount = rows.filter(row => row.gapMs <= targetMs).length;
+  const withinPct = count ? Math.round((withinCount / count) * 100) : 0;
+  const longest = rows[0] || null;
+
+  const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+  setText('responseMatchedKpi', String(count));
+  setText('responseAvgKpi', count ? formatResponseDuration(avgMs) : '--');
+  setText('responseMedianSub', count ? `Median ${formatResponseDuration(medianMs)}` : 'Median --');
+  setText('responseWithinKpi', count ? `${withinPct}%` : '--');
+  setText('responseWithinSub', `${withinCount} of ${count} lots ≤ ${responseTargetMinutes}m`);
+  setText('responseLongestKpi', longest ? formatResponseDuration(longest.gapMs) : '--');
+  setText('responseLongestSub', longest ? `${longest.lot} · ${longest.issue}` : '—');
+
+  const withinEl = document.getElementById('responseWithinKpi');
+  if (withinEl) withinEl.classList.toggle('text-red-600', count > 0 && withinPct < 50);
+  const longestEl = document.getElementById('responseLongestKpi');
+  if (longestEl) longestEl.classList.toggle('text-red-600', !!longest && longest.gapMinutes > responseTargetMinutes);
+
+  const delayed = count - withinCount;
+  setText('responseTableCount', `${count} lot${count === 1 ? '' : 's'}`);
+  setText('responseBreachPill', `${delayed} delayed of ${count}`);
+
+  const bucketCounts = responseBuckets.map(() => 0);
+  rows.forEach(row => { bucketCounts[bucketIndexFor(row.gapMinutes)] += 1; });
+  responseDistChart.data.datasets[0].data = bucketCounts;
+  responseDistChart.data.datasets[0].backgroundColor = responseBuckets.map(bucket => (bucket.lo >= responseTargetMinutes ? '#dc2626' : '#0a0a0a'));
+  responseDistChart.options.scales.y.max = Math.max(4, Math.ceil((Math.max(0, ...bucketCounts)) / 2) * 2);
+  responseDistChart.update();
+
+  renderResponseInsights(rows);
+  renderResponseTable(rows);
+  persistResponse();
+}
+
+function serializeResponseTriggers() {
+  return [...responseTriggerMap.entries()]
+    .map(([lot, t]) => `${lot}, ${normalizeResponseDT(t.trig).replace('T', ' ')}, ${t.machine || ''}, ${t.issue || ''}, ${t.reportedBy || ''}`)
+    .join('\n');
+}
+
+function serializeResponseBins() {
+  return [...responseBinMap.entries()]
+    .map(([lot, bin]) => `${lot}, ${normalizeResponseDT(bin).replace('T', ' ')}`)
+    .join('\n');
+}
+
+function fillResponseInputs() {
+  const trigEl = document.getElementById('responseTriggerInput');
+  const binEl = document.getElementById('responseBinInput');
+  if (trigEl) trigEl.value = serializeResponseTriggers();
+  if (binEl) binEl.value = serializeResponseBins();
+}
+
+function setResponseStatus(text) {
+  const status = document.getElementById('responseInputStatus');
+  if (status) status.textContent = text;
+}
+
+/* Rebuild both maps from the paste boxes, then recompute. */
+function applyResponseInputs() {
+  const trigLines = String(document.getElementById('responseTriggerInput').value || '')
+    .split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const binLines = String(document.getElementById('responseBinInput').value || '')
+    .split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+
+  responseBinMap = new Map();
+  binLines.forEach(line => {
+    const [lot, dt] = line.split(',').map(part => part.trim());
+    if (lot) responseBinMap.set(lot.toUpperCase(), normalizeResponseDT(dt || ''));
+  });
+
+  responseTriggerMap = new Map();
+  trigLines.forEach(line => {
+    const parts = line.split(',').map(part => part.trim());
+    if (!parts[0] || parts.length < 2) return;
+    responseTriggerMap.set(parts[0].toUpperCase(), {
+      trig: normalizeResponseDT(parts[1]),
+      machine: parts[2] || '',
+      issue: parts[3] || '',
+      reportedBy: parts.slice(4).join(', ').trim(),
+    });
+  });
+
+  responseImported = true;
+  renderResponseAnalytics();
+  const matched = joinResponseRows().length;
+  setResponseStatus(`${matched} matched · ${responseTriggerMap.size} triggers · ${responseBinMap.size} bins`);
+}
+
+/* Read rows (array of {header: value}) from an upload and merge into the maps. */
+function ingestResponseRows(rows, { fresh } = {}) {
+  if (fresh) { responseTriggerMap = new Map(); responseBinMap = new Map(); }
+  let triggers = 0, bins = 0;
+  rows.forEach(row => {
+    const lot = String(rowValue(row, ['lot id', 'lotid', 'lot', 'childlotid', 'child lot id']) || '').trim().toUpperCase();
+    if (!lot) return;
+
+    const binRaw = rowValue(row, ['binrecordeddt', 'bin recorded dt', 'bin recorded', 'binrecorded', 'binrecordeddatetime', 'bin recorded datetime', 'system binning time', 'system bin time']);
+    const binDate = binRaw !== '' ? parseResponseDateTime(binRaw) : null;
+    if (binDate) { responseBinMap.set(lot, toLocalDTString(binDate)); bins += 1; }
+
+    const trigRaw = rowValue(row, ['triggered', 'trigger datetime', 'triggeringdt', 'triggering log time', 'triggering time', 'trigger time', 'triggerdt']);
+    const dateRaw = rowValue(row, ['date', 'trigger date', 'triggerdate']);
+    const timeRaw = rowValue(row, ['time', 'triggertime']);
+    let trigDate = trigRaw !== '' ? parseResponseDateTime(trigRaw) : null;
+    if (!trigDate && dateRaw !== '') trigDate = combineResponseDateTime(dateRaw, timeRaw);
+    if (trigDate) {
+      const existing = responseTriggerMap.get(lot) || {};
+      responseTriggerMap.set(lot, {
+        trig: toLocalDTString(trigDate),
+        machine: String(rowValue(row, ['machine id', 'machine', 'machineid', 'tool']) || existing.machine || '').trim(),
+        issue: String(rowValue(row, ['issue type', 'issue', 'issuetype']) || existing.issue || '').trim(),
+        reportedBy: String(rowValue(row, ['reported by', 'reportedby', 'reporter', 'reported']) || existing.reportedBy || '').trim(),
+      });
+      triggers += 1;
+    }
+  });
+  return { total: rows.length, triggers, bins };
+}
+
+/* Minimal CSV parser fallback (quoted fields supported) when XLSX is unavailable. */
+function parseResponseCsvText(text) {
+  const lines = String(text).split(/\r?\n/).filter(line => line.length);
+  if (!lines.length) return [];
+  const parseLine = line => {
+    const out = []; let cur = ''; let inQuotes = false;
+    for (let i = 0; i < line.length; i += 1) {
+      const char = line[i];
+      if (inQuotes) {
+        if (char === '"') { if (line[i + 1] === '"') { cur += '"'; i += 1; } else inQuotes = false; }
+        else cur += char;
+      } else if (char === '"') inQuotes = true;
+      else if (char === ',') { out.push(cur); cur = ''; }
+      else cur += char;
+    }
+    out.push(cur);
+    return out;
+  };
+  const headers = parseLine(lines[0]).map(header => header.trim());
+  return lines.slice(1).map(line => {
+    const cells = parseLine(line);
+    const obj = {};
+    headers.forEach((header, idx) => { obj[header] = cells[idx] !== undefined ? cells[idx] : ''; });
+    return obj;
+  });
+}
+
+async function handleResponseImport(file) {
+  if (!file) return;
+  setResponseStatus(`Reading ${file.name}…`);
+  try {
+    let rows = [];
+    const isCsv = /\.csv$/i.test(file.name);
+    if (window.XLSX && !isCsv) {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+      workbook.SheetNames.forEach(name => {
+        rows = rows.concat(XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: '' }));
+      });
+    } else if (window.XLSX && isCsv) {
+      const text = await file.text();
+      const workbook = XLSX.read(text, { type: 'string', cellDates: true });
+      workbook.SheetNames.forEach(name => {
+        rows = rows.concat(XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: '' }));
+      });
+    } else {
+      rows = parseResponseCsvText(await file.text());
+    }
+
+    const fresh = !responseImported;
+    const result = ingestResponseRows(rows, { fresh });
+    responseImported = true;
+    fillResponseInputs();
+    renderResponseAnalytics();
+    const matched = joinResponseRows().length;
+    setResponseStatus(`Imported ${result.total} rows from ${file.name} · ${result.triggers} trigger times · ${result.bins} bin times · ${matched} matched lots${fresh ? ' (replaced sample)' : ' (merged)'}`);
+  } catch (error) {
+    console.warn('Response import failed', error);
+    setResponseStatus('Could not read that file. Use a CSV/Excel with Lot ID, Date+Time and BinRecordedDT columns.');
+  }
+}
+
+function exportResponseCsv() {
+  const rows = computeResponse();
+  const header = ['Lot ID', 'Machine', 'Issue Type', 'Reported By', 'Triggered', 'Bin Recorded', 'Response Time', 'Response Minutes', 'Target (min)', 'Status'];
+  const lines = [header.join(',')];
+  rows.forEach(row => {
+    const breached = row.gapMinutes > responseTargetMinutes;
+    const cells = [
+      row.lot, row.machine, row.issue, row.reportedBy,
+      formatResponseClock(row.trigDate), formatResponseClock(row.binDate),
+      formatResponseDuration(row.gapMs), Math.round(row.gapMinutes),
+      responseTargetMinutes, breached ? 'Delayed' : 'On Time',
+    ].map(value => {
+      const text = String(value ?? '');
+      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    });
+    lines.push(cells.join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'response-time-analytics.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+(function initResponseAnalytics() {
+  const storedTriggers = readStoredJson('postEResponseTriggers', null, Array.isArray);
+  const storedBins = readStoredJson('postEResponseBins', null, Array.isArray);
+  if (storedTriggers && storedBins && (storedTriggers.length || storedBins.length)) {
+    responseTriggerMap = new Map(storedTriggers);
+    responseBinMap = new Map(storedBins);
+  } else {
+    seedResponseMapsFromRows(responseSeedRows);
+  }
+
+  const slaSelect = document.getElementById('responseSlaSelect');
+  if (slaSelect) {
+    slaSelect.value = String(responseTargetMinutes);
+    slaSelect.addEventListener('change', () => {
+      responseTargetMinutes = Number(slaSelect.value) || 20;
+      renderResponseAnalytics();
+    });
+  }
+
+  const toggleBtn = document.getElementById('toggleResponseInputBtn');
+  const inputBody = document.getElementById('responseInputBody');
+  if (toggleBtn && inputBody) {
+    toggleBtn.addEventListener('click', () => {
+      const minimized = inputBody.classList.toggle('minimized');
+      toggleBtn.textContent = minimized ? 'Edit Data' : 'Hide Editor';
+      if (!minimized) fillResponseInputs();
+    });
+  }
+
+  const applyBtn = document.getElementById('responseApplyBtn');
+  if (applyBtn) applyBtn.addEventListener('click', applyResponseInputs);
+
+  const importInput = document.getElementById('responseImportInput');
+  const triggerImport = () => { if (importInput) importInput.click(); };
+  const importBtn = document.getElementById('responseImportBtn');
+  const importBtn2 = document.getElementById('responseImportBtn2');
+  if (importBtn) importBtn.addEventListener('click', triggerImport);
+  if (importBtn2) importBtn2.addEventListener('click', triggerImport);
+  if (importInput) {
+    importInput.addEventListener('change', event => {
+      const file = event.target.files && event.target.files[0];
+      handleResponseImport(file);
+      event.target.value = '';
+    });
+  }
+
+  const sampleBtn = document.getElementById('responseSampleBtn');
+  if (sampleBtn) {
+    sampleBtn.addEventListener('click', () => {
+      seedResponseMapsFromRows(responseSeedRows);
+      responseImported = false;
+      fillResponseInputs();
+      renderResponseAnalytics();
+      setResponseStatus(`Sample data loaded · ${joinResponseRows().length} matched lots`);
+    });
+  }
+
+  const clearBtn = document.getElementById('responseClearBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      responseTriggerMap = new Map();
+      responseBinMap = new Map();
+      responseImported = true;
+      fillResponseInputs();
+      renderResponseAnalytics();
+      setResponseStatus('Cleared. Import a CSV/Excel export or load the sample data.');
+    });
+  }
+
+  const exportBtn = document.getElementById('responseExportBtn');
+  if (exportBtn) exportBtn.addEventListener('click', exportResponseCsv);
+
+  fillResponseInputs();
+  renderResponseAnalytics();
+})();
 
 /* ---------- MICRON LOGO CLICK ---------- */
 const micronLogo = document.getElementById('micronLogo');
