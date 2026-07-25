@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Personal Finance Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background:#f5f5f7; color:#000; }
+  .input { width:100%; background:transparent; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:6px 10px; font-size:13px; outline:none; transition:.2s; }
+  .input:focus { border-color:#000; box-shadow:0 0 0 2px rgba(0,0,0,0.05); }
+  .del { background:#000; color:#fff; padding:7px; border-radius:8px; transition:.2s; display:inline-flex; }
+  .del:hover { background:#333; transform:scale(1.05); }
+  .nav-btn { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; font-size:14px; font-weight:500; transition:all .3s; cursor:pointer; width:100%; text-align:left; background:transparent; border:none; color:#000; }
+  .nav-btn:hover { background:#000; color:#fff; }
+  .nav-btn:hover svg { transform:scale(1.1); }
+  .nav-btn svg { transition:transform .3s; }
+  .card { background:#fff; border:1px solid rgba(0,0,0,0.05); border-radius:16px; transition:all .3s; }
+  .card-overview { padding:20px; border-left:4px solid #000; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .card-overview:hover { transform:translateY(-4px); box-shadow:0 12px 30px rgba(0,0,0,.08); }
+  .card-overview.warning { background:#fff4f4; border-color:rgba(220,38,38,.18); border-left-color:#ef9a9a !important; box-shadow:0 8px 24px rgba(220,38,38,.08); animation:softWarningPulse 1.8s ease-in-out infinite; }
+  .card-overview.warning p:first-child { color:rgba(153,27,27,.62); }
+  .card-overview.warning .amount { color:#b91c1c; }
+  .card-overview.healthy { background:#f2fbf5; border-color:rgba(22,163,74,.18); border-left-color:#86d39c !important; box-shadow:0 8px 24px rgba(22,163,74,.08); animation:softHealthyPulse 2.2s ease-in-out infinite; }
+  .card-overview.healthy p:first-child { color:rgba(21,128,61,.62); }
+  .card-overview.healthy .amount { color:#15803d; }
+  .negative-text { color:#b91c1c !important; }
+  .positive-text { color:#15803d !important; }
+  .summary-table tr.negative-row { background:#fff7f7; }
+  .summary-table tr.negative-row td { border-bottom-color:rgba(220,38,38,.14); }
+  .summary-table tr.negative-row td:nth-child(4) { color:#b91c1c; }
+  .summary-table tr.positive-row { background:#f7fcf8; }
+  .summary-table tr.positive-row td:nth-child(4) { color:#15803d; }
+  @keyframes softWarningPulse {
+    0%, 100% { box-shadow:0 8px 24px rgba(220,38,38,.08); }
+    50% { box-shadow:0 10px 28px rgba(220,38,38,.16); }
+  }
+  @keyframes softHealthyPulse {
+    0%, 100% { box-shadow:0 8px 24px rgba(22,163,74,.08); }
+    50% { box-shadow:0 10px 28px rgba(22,163,74,.14); }
+  }
+  .section-card { padding:24px; box-shadow:0 1px 3px rgba(0,0,0,.04); margin-bottom:32px; }
+  .section-title { font-size:18px; font-weight:700; margin-bottom:16px; border-left:4px solid #000; padding-left:12px; display:flex; align-items:center; justify-content:space-between; }
+  table { width:100%; font-size:14px; }
+  thead tr { background:rgba(0,0,0,.05); text-align:left; }
+  th { padding:12px; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+  td { padding:12px; border-bottom:1px solid rgba(0,0,0,.05); vertical-align:top; }
+  tbody tr:hover { background:rgba(0,0,0,.02); }
+  .add-btn { margin-top:16px; display:inline-flex; align-items:center; gap:8px; background:#000; color:#fff; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; border:1px solid #000; transition:all .3s; cursor:pointer; }
+  .add-btn:hover { background:#fff; color:#000; transform:scale(1.05); }
+  .csv-btn { display:inline-flex; align-items:center; gap:6px; background:#fff; color:#000; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:500; border:1px solid #000; transition:all .3s; cursor:pointer; }
+  .csv-btn:hover { background:#000; color:#fff; transform:scale(1.05); }
+  .reveal { opacity:0; transform:translateY(20px); transition:all .7s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .progress-bar { width:100%; height:8px; background:rgba(0,0,0,.1); border-radius:999px; overflow:hidden; }
+  .progress-fill { height:100%; background:#000; transition:width .7s; }
+  .stat-card { padding:20px; border-radius:12px; background:linear-gradient(135deg,#000 0%, rgba(0,0,0,.8) 100%); color:#fff; }
+  .sidebar { width:260px; min-height:100vh; background:#fff; border-right:1px solid rgba(0,0,0,.1); padding:24px; position:sticky; top:0; display:flex; flex-direction:column; }
+  .filter-panel { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 20px; margin-bottom:24px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .filter-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .month-input { height:38px; min-width:170px; background:#fff; border:1px solid rgba(0,0,0,.12); border-radius:8px; padding:0 10px; font-size:13px; outline:none; }
+  .month-input:focus { border-color:#000; box-shadow:0 0 0 2px rgba(0,0,0,.05); }
+  .mini-btn { height:38px; display:inline-flex; align-items:center; gap:7px; background:#000; color:#fff; border:1px solid #000; border-radius:8px; padding:0 12px; font-size:13px; font-weight:500; transition:all .2s; cursor:pointer; }
+  .mini-btn:hover { background:#fff; color:#000; }
+  .summary-table-wrap { overflow-x:auto; }
+  .summary-table td:last-child, .summary-table th:last-child { text-align:right; }
+  .profile-card { display:flex; align-items:center; gap:12px; margin-bottom:40px; padding:10px; border:1px solid rgba(0,0,0,.08); border-radius:14px; background:linear-gradient(135deg,#fff 0%,#f7f7f8 100%); }
+  .profile-photo-wrap { position:relative; flex:0 0 auto; }
+  .profile-photo { width:54px; height:54px; border-radius:50%; object-fit:cover; display:block; border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.1), 0 8px 20px rgba(0,0,0,.12); background:#000; }
+  .profile-initials { position:absolute; inset:2px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#000; color:#fff; font-weight:700; font-size:14px; letter-spacing:.02em; pointer-events:none; }
+  .profile-photo[src]:not([src=""]) + .profile-initials { display:none; }
+  .photo-upload { position:absolute; right:-4px; bottom:-4px; width:22px; height:22px; border-radius:50%; border:2px solid #fff; background:#000; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; box-shadow:0 4px 10px rgba(0,0,0,.18); }
+  .photo-upload:hover { transform:scale(1.08); background:#333; }
+  .photo-upload input { display:none; }
+  .advice-box { margin-top:28px; padding:16px; min-height:210px; border-radius:14px; border:1px solid rgba(0,0,0,.08); background:radial-gradient(circle at 12% 12%, rgba(22,163,74,.13), transparent 30%), linear-gradient(145deg,#fff,#f7f7f8); box-shadow:0 10px 28px rgba(0,0,0,.06); overflow:hidden; position:relative; }
+  .advice-box::before { content:""; position:absolute; inset:0; background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,.65) 45%, transparent 65%); transform:translateX(-120%); animation:adviceShine 5s ease-in-out infinite; pointer-events:none; }
+  .advice-kicker { display:flex; align-items:center; gap:7px; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(0,0,0,.52); margin-bottom:12px; }
+  .advice-icon { width:24px; height:24px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#000; color:#fff; flex:0 0 auto; }
+  .advice-title { font-size:14px; font-weight:800; line-height:1.25; margin-bottom:8px; }
+  .advice-text { font-size:12px; line-height:1.5; color:rgba(0,0,0,.62); min-height:72px; }
+  .advice-source { display:inline-flex; align-items:center; gap:5px; margin-top:14px; font-size:11px; color:rgba(0,0,0,.55); text-decoration:none; }
+  .advice-source:hover { color:#000; }
+  .advice-progress { position:absolute; left:16px; right:16px; bottom:14px; height:3px; border-radius:999px; background:rgba(0,0,0,.08); overflow:hidden; }
+  .advice-progress span { display:block; height:100%; width:100%; transform-origin:left; background:#000; animation:adviceProgress 5s linear infinite; }
+  .advice-content { position:relative; transition:opacity .35s ease, transform .35s ease, filter .35s ease; }
+  .advice-content.switching { opacity:0; transform:translateY(10px) scale(.98); filter:blur(4px); }
+  @keyframes adviceProgress {
+    from { transform:scaleX(1); }
+    to { transform:scaleX(0); }
+  }
+  @keyframes adviceShine {
+    0%, 72% { transform:translateX(-120%); }
+    100% { transform:translateX(120%); }
+  }
+  .toast { position:fixed; bottom:24px; right:24px; background:#000; color:#fff; padding:12px 20px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,.2); transform:translateY(100px); opacity:0; transition:all .4s; z-index:99; }
+  .toast.show { transform:translateY(0); opacity:1; }
+  ::-webkit-scrollbar { width:8px; }
+  ::-webkit-scrollbar-thumb { background:rgba(0,0,0,.15); border-radius:4px; }
+
+  @media (max-width: 1180px) {
+    .dashboard-shell { flex-direction:column; }
+    .sidebar { width:100%; min-height:auto; position:sticky; top:0; z-index:30; border-right:0; border-bottom:1px solid rgba(0,0,0,.1); padding:16px 20px; }
+    .profile-card { margin-bottom:14px; max-width:260px; }
+    #navMenu { flex-direction:row; gap:8px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    #navMenu::-webkit-scrollbar { display:none; }
+    .nav-btn { width:auto; flex:0 0 auto; white-space:nowrap; padding:9px 12px; }
+    .advice-box { margin-top:14px; min-height:126px; padding:14px; }
+    .advice-text { min-height:0; }
+    .sidebar .mt-auto { margin-top:14px !important; padding-top:12px; flex-direction:row; overflow-x:auto; }
+    .dashboard-main { padding:24px; }
+    #overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #analytics .grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+    .section-card { overflow-x:auto; }
+    table { min-width:760px; }
+    .summary-table { min-width:640px; }
+  }
+
+  @media (max-width: 760px) {
+    body { background:#f7f7f8; }
+    .sidebar { position:relative; padding:14px; }
+    .profile-card { max-width:none; margin-bottom:12px; }
+    .profile-photo { width:48px; height:48px; }
+    #navMenu { margin-left:-2px; margin-right:-2px; }
+    .nav-btn { font-size:13px; gap:8px; padding:8px 10px; }
+    .advice-box { min-height:150px; margin-top:12px; }
+    .sidebar .mt-auto { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; overflow:visible; }
+    .sidebar .mt-auto .nav-btn { width:100%; justify-content:center; }
+    .dashboard-main { padding:16px; overflow-x:hidden; }
+    .topbar { align-items:flex-start !important; flex-direction:column; gap:16px; margin-bottom:20px; }
+    .topbar h1 { font-size:26px; line-height:1.1; }
+    .topbar > div:last-child { width:100%; gap:10px; }
+    .topbar .w-72 { width:100% !important; min-width:0; }
+    .filter-panel { align-items:flex-start; flex-direction:column; padding:16px; }
+    .filter-actions { width:100%; display:grid; grid-template-columns:1fr; }
+    .month-input, .mini-btn { width:100%; justify-content:center; }
+    #overview { grid-template-columns:1fr; gap:12px; margin-bottom:20px; }
+    .card-overview { padding:16px; }
+    .card-overview .amount { font-size:22px; line-height:1.2; overflow-wrap:anywhere; }
+    .section-card { padding:16px; margin-bottom:20px; border-radius:12px; }
+    .section-title { align-items:flex-start; flex-direction:column; gap:10px; font-size:16px; line-height:1.25; }
+    .csv-btn, .add-btn { width:100%; justify-content:center; }
+    #chart > div { height:260px !important; min-width:560px; }
+    table { min-width:720px; font-size:13px; }
+    th, td { padding:10px; }
+    .input { min-width:110px; font-size:12px; }
+    #analytics .grid { grid-template-columns:1fr; gap:12px; }
+    .stat-card { padding:16px; }
+    .toast { left:16px; right:16px; bottom:16px; text-align:center; }
+  }
+
+  @media (max-width: 420px) {
+    .dashboard-main { padding:12px; }
+    .sidebar .mt-auto { grid-template-columns:1fr; }
+    .card-overview .amount { font-size:20px; }
+    #chart > div { min-width:500px; }
+    table { min-width:680px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flex min-h-screen dashboard-shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="profile-card">
+      <div class="profile-photo-wrap">
+        <img id="profilePhoto" class="profile-photo" alt="Shima Rahman profile photo" />
+        <span class="profile-initials">SR</span>
+        <label class="photo-upload" title="Upload profile photo">
+          <i data-lucide="camera" class="w-3 h-3"></i>
+          <input id="profilePhotoInput" type="file" accept="image/*" />
+        </label>
+      </div>
+      <div>
+        <p class="font-semibold text-sm">Shima Rahman</p>
+        <p class="text-xs text-black/50">Business Analyst</p>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1" id="navMenu">
+      <button class="nav-btn" data-target="overview"><i data-lucide="layout-dashboard" class="w-[18px] h-[18px]"></i>Overview</button>
+      <button class="nav-btn" data-target="monthly-overview"><i data-lucide="calendar-range" class="w-[18px] h-[18px]"></i>Monthly</button>
+      <button class="nav-btn" data-target="chart"><i data-lucide="bar-chart-3" class="w-[18px] h-[18px]"></i>Chart</button>
+      <button class="nav-btn" data-target="earnings"><i data-lucide="wallet" class="w-[18px] h-[18px]"></i>Earnings</button>
+      <button class="nav-btn" data-target="commitment"><i data-lucide="credit-card" class="w-[18px] h-[18px]"></i>Commitment</button>
+      <button class="nav-btn" data-target="outstanding"><i data-lucide="piggy-bank" class="w-[18px] h-[18px]"></i>Outstanding</button>
+      <button class="nav-btn" data-target="analytics"><i data-lucide="trending-up" class="w-[18px] h-[18px]"></i>Analytics</button>
+    </nav>
+
+    <aside class="advice-box" aria-live="polite">
+      <div class="advice-kicker">
+        <span class="advice-icon"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i></span>
+        Money Reminder
+      </div>
+      <div class="advice-content" id="adviceContent">
+        <p class="advice-title" id="adviceTitle">Build a simple budget</p>
+        <p class="advice-text" id="adviceText">Track income and spending clearly so you can spot problems early and make better monthly decisions.</p>
+        <a class="advice-source" href="https://investedwallet.com/personal-finance-tips/" target="_blank" rel="noopener">
+          <i data-lucide="external-link" class="w-3 h-3"></i>Invested Wallet
+        </a>
+      </div>
+      <div class="advice-progress"><span id="adviceProgress"></span></div>
+    </aside>
+
+    <div class="mt-auto pt-6 border-t border-black/10 flex flex-col gap-1">
+      <button class="nav-btn" onclick="exportAllCSV()"><i data-lucide="download" class="w-[16px] h-[16px]"></i>Export All CSV</button>
+      <button class="nav-btn" onclick="resetData()"><i data-lucide="rotate-ccw" class="w-[16px] h-[16px]"></i>Reset Data</button>
+      <button class="nav-btn"><i data-lucide="settings" class="w-[16px] h-[16px]"></i>Settings</button>
+      <button class="nav-btn"><i data-lucide="log-out" class="w-[16px] h-[16px]"></i>Log out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="flex-1 p-8 overflow-y-auto dashboard-main">
+    <!-- Topbar -->
+    <header class="flex items-center justify-between mb-8 reveal topbar">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p class="text-xs text-black/50 mt-1">Auto-saved to your browser • <span id="lastSaved">just now</span></p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 bg-white border border-black/10 rounded-full px-4 py-2 w-72">
+          <i data-lucide="search" class="w-4 h-4"></i>
+          <input class="bg-transparent outline-none text-sm flex-1" placeholder="Search..."/>
+        </div>
+        <button class="w-10 h-10 bg-white border border-black/10 rounded-full flex items-center justify-center hover:bg-black hover:text-white transition">
+          <i data-lucide="bell" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MONTH FILTER -->
+    <section class="card filter-panel reveal">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-black/50 mb-1">Calendar Filter</p>
+        <p class="text-lg font-bold" id="activeFilterLabel">All months</p>
+      </div>
+      <div class="filter-actions">
+        <input id="monthFilter" class="month-input" type="month" onchange="setFilterMonth(this.value)" />
+        <button class="mini-btn" onclick="clearMonthFilter()"><i data-lucide="calendar-days" class="w-4 h-4"></i>All Months</button>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section id="overview" class="grid grid-cols-4 gap-5 mb-8 reveal">
+      <div class="card card-overview">
+        <p class="text-xs uppercase tracking-wider text-black/50 mb-2">Total Earnings</p>
+        <p class="text-2xl font-bold amount" id="sumEarn">RM 0.00</p>
+      </div>
+      <div class="card card-overview" id="commitCard" style="border-left-color:rgba(0,0,0,.6)">
+        <p class="text-xs uppercase tracking-wider text-black/50 mb-2">Total Commitment</p>
+        <p class="text-2xl font-bold amount" id="sumCommit">RM 0.00</p>
+      </div>
+      <div class="card card-overview" id="netCard" style="border-left-color:rgba(0,0,0,.4)">
+        <p class="text-xs uppercase tracking-wider text-black/50 mb-2">Net Balance</p>
+        <p class="text-2xl font-bold amount" id="sumNet">RM 0.00</p>
+      </div>
+      <div class="card card-overview" style="border-left-color:rgba(0,0,0,.2)">
+        <p class="text-xs uppercase tracking-wider text-black/50 mb-2">Outstanding Debt</p>
+        <p class="text-2xl font-bold amount" id="sumDebt">RM 0.00</p>
+      </div>
+    </section>
+
+    <!-- MONTHLY OVERVIEW -->
+    <section id="monthly-overview" class="card section-card reveal">
+      <h2 class="section-title">
+        Monthly Earnings & Commitment
+        <button class="csv-btn" onclick="exportMonthlyCSV()"><i data-lucide="download" class="w-3.5 h-3.5"></i>Export CSV</button>
+      </h2>
+      <div class="summary-table-wrap">
+        <table class="summary-table">
+          <thead><tr><th>Month</th><th>Earnings</th><th>Commitment</th><th>Net Balance</th><th>Records</th></tr></thead>
+          <tbody id="monthlyOverviewBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CHART -->
+    <section id="chart" class="card section-card reveal">
+      <h2 class="section-title">
+        📈 Earnings vs Commitment Overview
+        <button class="csv-btn" onclick="exportChartCSV()"><i data-lucide="download" class="w-3.5 h-3.5"></i>Export CSV</button>
+      </h2>
+      <div style="height:320px"><canvas id="mainChart"></canvas></div>
+    </section>
+
+    <!-- EARNINGS -->
+    <section id="earnings" class="card section-card reveal">
+      <h2 class="section-title">
+        💰 Earnings
+        <button class="csv-btn" onclick="exportCSV('earnings')"><i data-lucide="download" class="w-3.5 h-3.5"></i>Export CSV</button>
+      </h2>
+      <table>
+        <thead><tr><th>Month</th><th>Item</th><th>Unit (hours/day)</th><th>Amount (RM)</th><th>Subtotal</th><th>Action</th></tr></thead>
+        <tbody id="earningsBody"></tbody>
+      </table>
+      <button class="add-btn" onclick="addEarning()"><i data-lucide="plus" class="w-4 h-4"></i>Add Earning</button>
+    </section>
+
+    <!-- COMMITMENT -->
+    <section id="commitment" class="card section-card reveal">
+      <h2 class="section-title">
+        💳 Monthly Commitment
+        <button class="csv-btn" onclick="exportCSV('commits')"><i data-lucide="download" class="w-3.5 h-3.5"></i>Export CSV</button>
+      </h2>
+      <table>
+        <thead><tr><th>Month</th><th>Category</th><th>Description</th><th>Amount (RM)</th><th>Action</th></tr></thead>
+        <tbody id="commitsBody"></tbody>
+      </table>
+      <button class="add-btn" onclick="addCommit()"><i data-lucide="plus" class="w-4 h-4"></i>Add Commitment</button>
+    </section>
+
+    <!-- OUTSTANDING -->
+    <section id="outstanding" class="card section-card reveal">
+      <h2 class="section-title">
+        📌 Outstanding Tracker (Loans / Installments)
+        <button class="csv-btn" onclick="exportCSV('loans')"><i data-lucide="download" class="w-3.5 h-3.5"></i>Export CSV</button>
+      </h2>
+      <table>
+        <thead><tr>
+          <th>Item</th><th>Total</th><th>Monthly</th><th>Paid</th>
+          <th>Start Date</th><th>Progress / Final</th><th>Action</th>
+        </tr></thead>
+        <tbody id="loansBody"></tbody>
+      </table>
+      <button class="add-btn" onclick="addLoan()"><i data-lucide="plus" class="w-4 h-4"></i>Add Outstanding</button>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section id="analytics" class="card section-card reveal">
+      <h2 class="section-title">📊 Quick Analytics</h2>
+      <div class="grid grid-cols-3 gap-5">
+        <div class="stat-card">
+          <p class="text-xs uppercase tracking-wider opacity-60">Savings Rate</p>
+          <p class="text-3xl font-bold mt-2" id="statSav">0%</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs uppercase tracking-wider opacity-60">Debt-to-Income</p>
+          <p class="text-3xl font-bold mt-2" id="statDTI">0x</p>
+        </div>
+        <div class="stat-card">
+          <p class="text-xs uppercase tracking-wider opacity-60">Total Loans</p>
+          <p class="text-3xl font-bold mt-2" id="statLoans">0</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast">Saved ✓</div>
+
+<script>
+  // ---------- DEFAULT DATA ----------
+  const DEFAULTS = {
+    earnings: [
+      { id: 1, month: getCurrentMonth(), item: "Basic Salary", unit: 1, amount: 2865 },
+      { id: 2, month: getCurrentMonth(), item: "Shift Allowance", unit: 16, amount: 144 },
+      { id: 3, month: getCurrentMonth(), item: "Transport Allowance", unit: 1, amount: 200 },
+    ],
+    commits: [{ id: 1, month: getCurrentMonth(), category: "Bank", desc: "Alliance Bank", amount: 7000 }],
+    loans: [{ id: 1, item: "Car Loan", total: 45000, monthly: 850, paid: 8500, start: "2024-01-01" }],
+  };
+
+  // ---------- LOCAL STORAGE ----------
+  const STORAGE_KEY = "finance_dashboard_v2";
+  const FILTER_KEY = "finance_dashboard_month_filter";
+  const PROFILE_PHOTO_KEY = "finance_dashboard_profile_photo";
+  function getCurrentMonth() {
+    return new Date().toISOString().slice(0, 7);
+  }
+  function normalizeData(data) {
+    const fallbackMonth = getCurrentMonth();
+    data.earnings = (data.earnings || []).map(e => ({ month: fallbackMonth, ...e }));
+    data.commits = (data.commits || []).map(c => ({ month: fallbackMonth, ...c }));
+    data.loans = data.loans || [];
+    return data;
+  }
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return normalizeData(JSON.parse(raw));
+    } catch (e) {}
+    return normalizeData(JSON.parse(JSON.stringify(DEFAULTS)));
+  }
+  function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ earnings, commits, loans }));
+    document.getElementById("lastSaved").textContent = new Date().toLocaleTimeString();
+    showToast("Saved ✓");
+  }
+
+  let { earnings, commits, loans } = loadData();
+  let selectedMonth = localStorage.getItem(FILTER_KEY) || "";
+
+  const fmt = n => "RM " + (n||0).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const monthFmt = new Intl.DateTimeFormat("en-MY", { month: "long", year: "numeric" });
+  const monthName = month => {
+    if (!month) return "All months";
+    const [year, monthNo] = month.split("-").map(Number);
+    return monthFmt.format(new Date(year, monthNo - 1, 1));
+  };
+
+  // ---------- PROFILE PHOTO ----------
+  function loadProfilePhoto() {
+    const savedPhoto = localStorage.getItem(PROFILE_PHOTO_KEY);
+    if (savedPhoto) document.getElementById("profilePhoto").src = savedPhoto;
+  }
+
+  function resizeProfilePhoto(file, done) {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const size = 320;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
+
+      canvas.width = size;
+      canvas.height = size;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      done(canvas.toDataURL("image/jpeg", 0.86));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      showToast("Could not load that image");
+    };
+    img.src = url;
+  }
+
+  document.getElementById("profilePhotoInput").addEventListener("change", e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image file");
+      return;
+    }
+
+    resizeProfilePhoto(file, photoData => {
+      document.getElementById("profilePhoto").src = photoData;
+      try {
+        localStorage.setItem(PROFILE_PHOTO_KEY, photoData);
+        showToast("Profile photo updated");
+      } catch (e) {
+        showToast("Photo preview updated, but could not save");
+      }
+    });
+  });
+
+  // ---------- FINANCIAL ADVICE REMINDER ----------
+  const FINANCE_ADVICES = [
+    { title: "Build a simple budget", text: "Track income and spending clearly so you can spot problems early and make better monthly decisions." },
+    { title: "List every debt", text: "Write down balances, interest rates, minimum payments, and loan timelines so payoff choices become easier." },
+    { title: "Live below your means", text: "Keep lifestyle costs lower than income, especially when debt or commitments are already heavy." },
+    { title: "Protect your credit score", text: "Check your credit regularly, fix mistakes early, and avoid missed payments that can raise borrowing costs." },
+    { title: "Create a savings plan", text: "Set a realistic monthly savings target and keep following it even when the routine feels ordinary." },
+    { title: "Pay yourself first", text: "Move savings before spending on extras so your future goals are handled before the month gets noisy." },
+    { title: "Separate savings money", text: "Keep savings away from your daily spending account so it is less tempting to use casually." },
+    { title: "Read about money weekly", text: "Spend a little time each week learning finance basics, budgeting, investing, or money habits." },
+    { title: "Own your financial education", text: "Treat money knowledge as your responsibility and keep improving one practical skill at a time." },
+    { title: "Grow your income", text: "When budgeting alone is not enough, build skills, know your value, and look for ways to earn more." },
+    { title: "Use tools to stay organized", text: "Apps or spreadsheets can keep goals, spending, debts, and progress visible in one place." },
+    { title: "Invest in yourself", text: "Courses, books, new skills, and side projects can become some of your best long-term assets." },
+    { title: "Learn investing language", text: "Understand ideas like compound interest and dollar-cost averaging before putting serious money to work." },
+    { title: "Try a side hustle", text: "Extra income can speed up savings, reduce debt faster, and give your budget more breathing room." },
+    { title: "Choose assets carefully", text: "Learn the difference between things that build value and things that quietly create extra costs." },
+    { title: "Avoid money comparison", text: "Focus on your own progress instead of matching another person's lifestyle or financial timeline." },
+    { title: "Understand credit cards", text: "Use cards with discipline, know the interest cost, and avoid carrying balances that grow quickly." },
+    { title: "Know your career worth", text: "Do not stay stuck professionally; update skills and pursue opportunities that match your value." },
+    { title: "Start now, not later", text: "Delaying savings, investing, or debt payoff can make future progress much harder." },
+    { title: "Review goals often", text: "Revisit your money goals as life changes so your plan stays useful and realistic." },
+    { title: "Look beyond one investment", text: "After the basics, learn other options so your wealth plan is not dependent on one path." },
+    { title: "Sleep before buying", text: "Wait before non-essential purchases; a short pause often reveals whether you truly need it." },
+    { title: "Buy meaningful experiences", text: "Treat yourself wisely by choosing spending that creates lasting value instead of quick clutter." },
+    { title: "Watch lifestyle inflation", text: "When income increases, direct some of the gain toward debt, savings, or investing before upgrading everything." },
+    { title: "Talk openly about money", text: "Honest finance conversations with loved ones can reduce fear and improve shared decisions." },
+    { title: "Pay attention to fees", text: "Small investing or account fees can quietly reduce returns, so review and remove high-cost options." },
+    { title: "Be frugal, not cheap", text: "Prioritize spending on what matters most instead of cutting costs in ways that hurt quality of life." },
+    { title: "Understand life insurance", text: "Learn when protection matters, especially if others depend on your income or support." },
+    { title: "Go at your own pace", text: "Personal finance is a journey; stay consistent and improve one area at a time." },
+  ];
+
+  let adviceIndex = 0;
+  function showAdvice(index) {
+    const content = document.getElementById("adviceContent");
+    const title = document.getElementById("adviceTitle");
+    const text = document.getElementById("adviceText");
+    const progress = document.getElementById("adviceProgress");
+
+    content.classList.add("switching");
+    setTimeout(() => {
+      title.textContent = FINANCE_ADVICES[index].title;
+      text.textContent = FINANCE_ADVICES[index].text;
+      progress.style.animation = "none";
+      progress.offsetHeight;
+      progress.style.animation = "";
+      content.classList.remove("switching");
+      lucide.createIcons();
+    }, 350);
+  }
+  function startAdviceReminder() {
+    showAdvice(adviceIndex);
+    setInterval(() => {
+      adviceIndex = (adviceIndex + 1) % FINANCE_ADVICES.length;
+      showAdvice(adviceIndex);
+    }, 5000);
+  }
+
+  // ---------- TOAST ----------
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(window._toastT);
+    window._toastT = setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // ---------- MONTH FILTER ----------
+  function filteredEarnings() {
+    return selectedMonth ? earnings.filter(e => e.month === selectedMonth) : earnings;
+  }
+  function filteredCommits() {
+    return selectedMonth ? commits.filter(c => c.month === selectedMonth) : commits;
+  }
+  function setFilterMonth(month) {
+    selectedMonth = month;
+    localStorage.setItem(FILTER_KEY, selectedMonth);
+    render(false);
+  }
+  function clearMonthFilter() {
+    selectedMonth = "";
+    localStorage.removeItem(FILTER_KEY);
+    render(false);
+  }
+  function getMonthlySummary() {
+    const rows = new Map();
+    const ensure = month => {
+      const key = month || getCurrentMonth();
+      if (!rows.has(key)) rows.set(key, { month: key, earnings: 0, commits: 0, records: 0 });
+      return rows.get(key);
+    };
+
+    earnings.forEach(e => {
+      const row = ensure(e.month);
+      row.earnings += (e.unit || 0) * (e.amount || 0);
+      row.records += 1;
+    });
+    commits.forEach(c => {
+      const row = ensure(c.month);
+      row.commits += c.amount || 0;
+      row.records += 1;
+    });
+
+    return [...rows.values()].sort((a, b) => b.month.localeCompare(a.month));
+  }
+
+  // ---------- CHART ----------
+  let chart;
+  function initChart() {
+    const ctx = document.getElementById("mainChart").getContext("2d");
+    const grad = ctx.createLinearGradient(0, 0, 0, 320);
+    grad.addColorStop(0, "rgba(0,0,0,0.35)");
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          { label: "Earnings", data: [], borderColor: "#000", backgroundColor: grad, borderWidth: 2.5, tension: 0.4, fill: true, pointRadius: 5, pointBackgroundColor: "#000" },
+          { label: "Commitment", data: [], borderColor: "#999", backgroundColor: "transparent", borderWidth: 2, borderDash: [6, 4], tension: 0.4, pointRadius: 4, pointBackgroundColor: "#999" },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 12, weight: "600" }, color: "#000", usePointStyle: true } },
+          tooltip: { backgroundColor: "#000", titleColor: "#fff", bodyColor: "#fff", padding: 12, cornerRadius: 8, callbacks: { label: c => `${c.dataset.label}: RM ${c.parsed.y.toLocaleString()}` } }
+        },
+        scales: {
+          y: { grid: { color: "rgba(0,0,0,0.06)" }, ticks: { color: "#000", callback: v => "RM " + v } },
+          x: { grid: { display: false }, ticks: { color: "#000" } }
+        },
+        animation: { duration: 800, easing: "easeOutQuart" }
+      }
+    });
+  }
+  function updateChart() {
+    // Show breakdown of each earning item with total commitment baseline
+    const labels = earnings.map(e => e.item.length > 12 ? e.item.slice(0,12)+"…" : e.item);
+    const earnVals = earnings.map(e => e.unit * e.amount);
+    const totalCommit = commits.reduce((s,c)=>s+c.amount, 0);
+    const commitVals = earnings.map(() => totalCommit / Math.max(earnings.length,1));
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = earnVals;
+    chart.data.datasets[1].data = commitVals;
+    chart.update();
+  }
+
+  // ---------- RENDER ----------
+  function updateChart() {
+    let labels, earnVals, commitVals;
+
+    if (selectedMonth) {
+      const currentEarnings = filteredEarnings();
+      const totalCommit = filteredCommits().reduce((s,c)=>s+c.amount, 0);
+      labels = currentEarnings.map(e => e.item.length > 12 ? e.item.slice(0,12)+"..." : e.item);
+      earnVals = currentEarnings.map(e => e.unit * e.amount);
+      commitVals = currentEarnings.map(() => totalCommit / Math.max(currentEarnings.length,1));
+    } else {
+      const monthlyRows = getMonthlySummary().reverse();
+      labels = monthlyRows.map(r => monthName(r.month));
+      earnVals = monthlyRows.map(r => r.earnings);
+      commitVals = monthlyRows.map(r => r.commits);
+    }
+
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = earnVals;
+    chart.data.datasets[1].data = commitVals;
+    chart.update();
+  }
+
+  function render(save = true) {
+    const currentEarnings = filteredEarnings();
+    const currentCommits = filteredCommits();
+
+    document.getElementById("monthFilter").value = selectedMonth;
+    document.getElementById("activeFilterLabel").textContent = monthName(selectedMonth);
+
+    document.getElementById("earningsBody").innerHTML = currentEarnings.map(e => `
+      <tr>
+        <td><input class="input" type="month" value="${e.month}" onchange="upd('earnings',${e.id},'month',this.value)"/></td>
+        <td><input class="input" value="${e.item}" onchange="upd('earnings',${e.id},'item',this.value)"/></td>
+        <td><input class="input" type="number" value="${e.unit}" onchange="upd('earnings',${e.id},'unit',+this.value)"/></td>
+        <td><input class="input" type="number" value="${e.amount}" onchange="upd('earnings',${e.id},'amount',+this.value)"/></td>
+        <td class="font-semibold">${fmt(e.unit*e.amount)}</td>
+        <td><button class="del" onclick="del('earnings',${e.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>
+      </tr>`).join("");
+
+    document.getElementById("commitsBody").innerHTML = currentCommits.map(c => `
+      <tr>
+        <td><input class="input" type="month" value="${c.month}" onchange="upd('commits',${c.id},'month',this.value)"/></td>
+        <td><input class="input" value="${c.category}" onchange="upd('commits',${c.id},'category',this.value)"/></td>
+        <td><input class="input" value="${c.desc}" onchange="upd('commits',${c.id},'desc',this.value)"/></td>
+        <td><input class="input" type="number" value="${c.amount}" onchange="upd('commits',${c.id},'amount',+this.value)"/></td>
+        <td><button class="del" onclick="del('commits',${c.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>
+      </tr>`).join("");
+
+    document.getElementById("loansBody").innerHTML = loans.map(l => {
+      const remaining = l.total - l.paid;
+      const monthsLeft = l.monthly > 0 ? Math.ceil(remaining / l.monthly) : 0;
+      const totalMonths = l.monthly > 0 ? Math.ceil(l.total / l.monthly) : 0;
+      const start = new Date(l.start);
+      const finalDate = new Date(start);
+      finalDate.setMonth(finalDate.getMonth() + totalMonths);
+      const progress = l.total > 0 ? (l.paid / l.total) * 100 : 0;
+      const finalStr = finalDate.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+      return `
+        <tr>
+          <td><input class="input" value="${l.item}" onchange="upd('loans',${l.id},'item',this.value)"/></td>
+          <td><input class="input" type="number" value="${l.total}" onchange="upd('loans',${l.id},'total',+this.value)"/></td>
+          <td><input class="input" type="number" value="${l.monthly}" onchange="upd('loans',${l.id},'monthly',+this.value)"/></td>
+          <td><input class="input" type="number" value="${l.paid}" onchange="upd('loans',${l.id},'paid',+this.value)"/></td>
+          <td><input class="input" type="date" value="${l.start}" onchange="upd('loans',${l.id},'start',this.value)"/></td>
+          <td style="min-width:220px">
+            <p class="text-xs">Final: <b>${finalStr}</b></p>
+            <p class="text-xs text-black/60 mb-1.5">(${monthsLeft} months left)</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+            <p class="text-[11px] mt-1 text-black/60">${progress.toFixed(1)}% paid • Remaining: ${fmt(remaining)}</p>
+          </td>
+          <td><button class="del" onclick="del('loans',${l.id})"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button></td>
+        </tr>`;
+    }).join("");
+
+    const monthlyRows = getMonthlySummary();
+    document.getElementById("monthlyOverviewBody").innerHTML = monthlyRows.length ? monthlyRows.map(r => `
+      <tr class="${r.earnings - r.commits < 0 ? 'negative-row' : r.earnings - r.commits > 0 ? 'positive-row' : ''}">
+        <td class="font-semibold">${monthName(r.month)}</td>
+        <td>${fmt(r.earnings)}</td>
+        <td>${fmt(r.commits)}</td>
+        <td class="font-semibold">${fmt(r.earnings - r.commits)}</td>
+        <td>${r.records}</td>
+      </tr>`).join("") : `<tr><td colspan="5" class="text-black/50">No monthly data yet.</td></tr>`;
+
+    const totalEarn = currentEarnings.reduce((s,e)=>s + e.unit*e.amount, 0);
+    const totalCommit = currentCommits.reduce((s,c)=>s + c.amount, 0);
+    const totalDebt = loans.reduce((s,l)=>s + (l.total - l.paid), 0);
+    const net = totalEarn - totalCommit;
+
+    document.getElementById("sumEarn").textContent = fmt(totalEarn);
+    document.getElementById("sumCommit").textContent = fmt(totalCommit);
+    document.getElementById("sumNet").textContent = fmt(net);
+    document.getElementById("sumDebt").textContent = fmt(totalDebt);
+
+    const commitmentIsHigh = totalCommit > totalEarn;
+    const commitmentIsHealthy = totalCommit < totalEarn;
+    const netIsNegative = net < 0;
+    const netIsPositive = net > 0;
+    document.getElementById("commitCard").classList.toggle("warning", commitmentIsHigh);
+    document.getElementById("commitCard").classList.toggle("healthy", commitmentIsHealthy);
+    document.getElementById("netCard").classList.toggle("warning", netIsNegative);
+    document.getElementById("netCard").classList.toggle("healthy", netIsPositive);
+    document.getElementById("sumCommit").classList.toggle("negative-text", commitmentIsHigh);
+    document.getElementById("sumCommit").classList.toggle("positive-text", commitmentIsHealthy);
+    document.getElementById("sumNet").classList.toggle("negative-text", netIsNegative);
+    document.getElementById("sumNet").classList.toggle("positive-text", netIsPositive);
+
+    document.getElementById("statSav").textContent = (totalEarn ? (net/totalEarn*100).toFixed(1) : 0) + "%";
+    document.getElementById("statDTI").textContent = (totalEarn ? (totalDebt/totalEarn).toFixed(2) : 0) + "x";
+    document.getElementById("statLoans").textContent = loans.length;
+
+    if (chart) updateChart();
+    lucide.createIcons();
+    if (save) saveData();
+  }
+
+  // ---------- CRUD ----------
+  function upd(store, id, key, val) {
+    const arr = store === "earnings" ? earnings : store === "commits" ? commits : loans;
+    arr.forEach(x => { if (x.id === id) x[key] = val; });
+    render();
+  }
+  function del(store, id) {
+    if (store === "earnings") earnings = earnings.filter(x => x.id !== id);
+    if (store === "commits") commits = commits.filter(x => x.id !== id);
+    if (store === "loans") loans = loans.filter(x => x.id !== id);
+    render();
+  }
+  function addEarning() { earnings.push({ id: Date.now(), month:selectedMonth || getCurrentMonth(), item:"New Item", unit:1, amount:0 }); render(); }
+  function addCommit()  { commits.push({ id: Date.now(), month:selectedMonth || getCurrentMonth(), category:"New", desc:"", amount:0 }); render(); }
+  function addLoan()    { loans.push({ id: Date.now(), item:"New Loan", total:0, monthly:0, paid:0, start:new Date().toISOString().slice(0,10) }); render(); }
+
+  function resetData() {
+    if (!confirm("Reset all data to defaults? This cannot be undone.")) return;
+    const d = JSON.parse(JSON.stringify(DEFAULTS));
+    earnings = d.earnings; commits = d.commits; loans = d.loans;
+    selectedMonth = "";
+    localStorage.removeItem(FILTER_KEY);
+    render();
+    showToast("Data reset ✓");
+  }
+
+  // ---------- CSV EXPORT ----------
+  function downloadCSV(filename, rows) {
+    const csv = rows.map(r => r.map(c => {
+      const s = String(c ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")).join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`Exported ${filename}`);
+  }
+
+  function exportCSV(type) {
+    if (type === "earnings") {
+      const rows = [["Month","Item","Unit","Amount (RM)","Subtotal (RM)"]];
+      filteredEarnings().forEach(e => rows.push([monthName(e.month), e.item, e.unit, e.amount, e.unit*e.amount]));
+      rows.push(["TOTAL","","","", filteredEarnings().reduce((s,e)=>s+e.unit*e.amount,0)]);
+      downloadCSV("earnings.csv", rows);
+    } else if (type === "commits") {
+      const rows = [["Month","Category","Description","Amount (RM)"]];
+      filteredCommits().forEach(c => rows.push([monthName(c.month), c.category, c.desc, c.amount]));
+      rows.push(["TOTAL","","", filteredCommits().reduce((s,c)=>s+c.amount,0)]);
+      downloadCSV("commitment.csv", rows);
+    } else if (type === "loans") {
+      const rows = [["Item","Total","Monthly","Paid","Start","Remaining","Progress %","Final Date"]];
+      loans.forEach(l => {
+        const rem = l.total - l.paid;
+        const totalMonths = l.monthly > 0 ? Math.ceil(l.total / l.monthly) : 0;
+        const final = new Date(l.start); final.setMonth(final.getMonth()+totalMonths);
+        const prog = l.total ? (l.paid/l.total*100).toFixed(1) : 0;
+        rows.push([l.item, l.total, l.monthly, l.paid, l.start, rem, prog, final.toLocaleDateString("en-GB",{month:"long",year:"numeric"})]);
+      });
+      downloadCSV("outstanding.csv", rows);
+    }
+  }
+
+  function exportChartCSV() {
+    const rows = selectedMonth
+      ? [["Item","Earnings (RM)","Avg Commitment Baseline (RM)"]]
+      : [["Month","Earnings (RM)","Commitment (RM)"]];
+
+    if (selectedMonth) {
+      const currentEarnings = filteredEarnings();
+      const totalCommit = filteredCommits().reduce((s,c)=>s+c.amount,0);
+      const baseline = totalCommit / Math.max(currentEarnings.length,1);
+      currentEarnings.forEach(e => rows.push([e.item, e.unit*e.amount, baseline.toFixed(2)]));
+    } else {
+      getMonthlySummary().reverse().forEach(r => rows.push([monthName(r.month), r.earnings, r.commits]));
+    }
+
+    downloadCSV("chart-data.csv", rows);
+  }
+
+  function exportMonthlyCSV() {
+    const rows = [["Month","Earnings (RM)","Commitment (RM)","Net Balance (RM)","Records"]];
+    getMonthlySummary().forEach(r => rows.push([monthName(r.month), r.earnings, r.commits, r.earnings - r.commits, r.records]));
+    downloadCSV("monthly-overview.csv", rows);
+  }
+
+  function exportAllCSV() {
+    exportCSV("earnings");
+    setTimeout(()=>exportCSV("commits"), 300);
+    setTimeout(()=>exportCSV("loans"), 600);
+    setTimeout(()=>exportMonthlyCSV(), 900);
+  }
+
+  // ---------- NAV ----------
+  document.querySelectorAll("#navMenu .nav-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-target");
+      document.getElementById(id)?.scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+  });
+
+  // ---------- FADE-IN ----------
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting && e.target.classList.add("visible"));
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".reveal").forEach(el => obs.observe(el));
+
+  // ---------- INIT ----------
+  loadProfilePhoto();
+  startAdviceReminder();
+  initChart();
+  render(false);
+  lucide.createIcons();
+</script>
+</body>
+</html>
