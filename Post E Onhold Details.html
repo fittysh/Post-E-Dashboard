@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Post E | Onhold Details</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background: #fafafa;
+    color: #0a0a0a;
+  }
+  .card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: #0a0a0a;
+    box-shadow: 0 18px 34px -24px rgba(0,0,0,0.35);
+  }
+  .field {
+    width: 100%;
+    border: 1px solid #d4d4d4;
+    border-radius: 14px;
+    background: #fff;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field:focus {
+    border-color: #0a0a0a;
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.08);
+  }
+  .action-btn {
+    border: 1px solid #0a0a0a;
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .action-btn:hover {
+    transform: translateY(-1px);
+  }
+  .action-btn.primary {
+    background: #0a0a0a;
+    color: #fff;
+  }
+  .action-btn.secondary {
+    background: #fff;
+    color: #0a0a0a;
+  }
+  .import-shell {
+    border: 1px solid #e5e5e5;
+    border-radius: 18px;
+    background: #fafafa;
+    padding: 12px;
+    margin-top: 18px;
+  }
+  .import-shell.minimized .import-panel,
+  .import-shell.minimized .import-status {
+    display: none;
+  }
+  .import-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .import-panel {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .import-status {
+    min-height: 18px;
+    color: #525252;
+    font-size: 0.75rem;
+    font-weight: 800;
+    margin-top: 10px;
+  }
+  .detail-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.4fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .import-panel {
+      grid-template-columns: 1fr;
+    }
+    .detail-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="max-w-6xl mx-auto px-5 py-6 md:py-10">
+    <header class="flex items-start justify-between gap-4 flex-wrap mb-6">
+      <div>
+        <a class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-black" href="./Post%20E%20Dashboard.html">
+          <span aria-hidden="true">&lt;</span>
+          Back to dashboard
+        </a>
+        <p id="weekLabel" class="mt-5 inline-block bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">WW--</p>
+        <h1 class="text-4xl md:text-5xl font-bold tracking-tight mt-4">Onhold Lots / WIP</h1>
+        <p id="ownerSubtitle" class="text-gray-600 mt-2">Owner details</p>
+      </div>
+      <button id="printBtn" class="action-btn secondary" type="button">Print / Save PDF</button>
+    </header>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="card bg-white border border-gray-200 rounded-3xl p-6">
+        <p class="text-xs uppercase tracking-wider font-bold text-gray-500">Owner</p>
+        <h2 id="ownerValue" class="text-3xl font-bold mt-2">-</h2>
+      </div>
+      <div class="card bg-white border border-gray-200 rounded-3xl p-6">
+        <p class="text-xs uppercase tracking-wider font-bold text-gray-500">Total Lots</p>
+        <h2 id="lotsValue" class="text-3xl font-bold mt-2">0</h2>
+      </div>
+      <div class="card bg-white border border-gray-200 rounded-3xl p-6">
+        <p class="text-xs uppercase tracking-wider font-bold text-gray-500">Total WIP</p>
+        <h2 id="wipValue" class="text-3xl font-bold mt-2">0k</h2>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 card bg-white border border-gray-200 rounded-3xl p-6">
+        <div class="flex items-start justify-between gap-4 flex-wrap mb-5">
+          <div>
+            <span class="inline-block bg-black text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">Lot Detail Workspace</span>
+            <h2 class="text-2xl font-bold mt-3">Onhold Lot Details</h2>
+          </div>
+          <button id="addRowBtn" class="action-btn primary" type="button">Add Row</button>
+        </div>
+
+        <div class="hidden md:grid detail-row text-xs uppercase tracking-wider font-bold text-gray-500 border-b border-gray-200 pb-3">
+          <span>Lot ID</span>
+          <span>Reason</span>
+          <span>Aging</span>
+          <span>Next Action</span>
+          <span></span>
+        </div>
+        <div id="detailRows" class="space-y-3 mt-3"></div>
+
+        <div id="importShell" class="import-shell">
+          <div class="import-header">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-bold text-gray-500">Excel Update</p>
+              <p class="text-sm font-bold mt-1">Import onhold lot details</p>
+            </div>
+            <button id="toggleImportBtn" class="action-btn secondary" type="button">Minimize</button>
+          </div>
+          <div class="import-panel">
+            <input id="excelInput" class="field" type="file" accept=".xlsx,.xls,.csv">
+            <button id="importExcelBtn" class="action-btn primary" type="button">Import Excel</button>
+            <button id="downloadTemplateBtn" class="action-btn secondary" type="button">Download Template</button>
+          </div>
+          <p id="importStatus" class="import-status">Excel columns supported: Owner, Lot ID, Reason, Aging, Next Action, WIP, Remarks.</p>
+        </div>
+      </div>
+
+      <aside class="lg:col-span-4 space-y-6">
+        <div class="card bg-black text-white rounded-3xl p-6">
+          <p class="text-xs uppercase tracking-wider font-bold text-gray-400">This Owner Share</p>
+          <h2 id="shareValue" class="text-4xl font-bold mt-2">0%</h2>
+          <p id="shareText" class="text-sm text-gray-300 mt-2">Based on dashboard totals passed from the owner breakdown.</p>
+        </div>
+
+        <div class="card bg-white border border-gray-200 rounded-3xl p-6">
+          <p class="text-xs uppercase tracking-wider font-bold text-gray-500 mb-3">Remarks</p>
+          <textarea id="remarksInput" class="field min-h-48 resize-y" placeholder="Put the full on-hold lots notes, disposition status, meeting outcome, owner action, or escalation detail here."></textarea>
+          <div class="flex gap-3 mt-4">
+            <button id="saveBtn" class="action-btn primary" type="button">Save</button>
+            <button id="clearBtn" class="action-btn secondary" type="button">Clear</button>
+          </div>
+          <p id="saveStatus" class="text-xs font-bold text-gray-500 mt-3">Saved locally in this browser.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const pageState = {
+  owner: params.get('owner') || 'Unassigned',
+  lots: Math.max(0, Math.round(Number(params.get('lots')) || 0)),
+  wip: Math.max(0, Number(params.get('wip')) || 0),
+  week: params.get('week') || 'WW--',
+  totalLots: Math.max(0, Math.round(Number(params.get('totalLots')) || 0)),
+  totalWip: Math.max(0, Number(params.get('totalWip')) || 0),
+};
+
+function formatOnholdWip(value) {
+  const numeric = Number(value) || 0;
+  const abs = Math.abs(numeric);
+  const formatted = abs >= 100 ? Math.round(abs).toLocaleString() : abs.toFixed(1).replace(/\.0$/, '');
+  return `${numeric < 0 ? '-' : ''}${formatted}k`;
+}
+
+function normalizeKey(key) {
+  return String(key || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function rowValue(row, names) {
+  const map = {};
+  Object.keys(row || {}).forEach(key => { map[normalizeKey(key)] = row[key]; });
+  for (const name of names) {
+    const value = map[normalizeKey(name)];
+    if (value !== undefined && value !== null && value !== '') return value;
+  }
+  return '';
+}
+
+function setImportStatus(message) {
+  document.getElementById('importStatus').textContent = message;
+}
+
+function storageKey() {
+  return `postEOnholdDetail:${pageState.week}:${pageState.owner}`;
+}
+
+function readSavedDetails() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey())) || { remarks: '', rows: [] };
+  } catch (error) {
+    return { remarks: '', rows: [] };
+  }
+}
+
+function writeSavedDetails() {
+  const rows = Array.from(document.querySelectorAll('[data-detail-row]')).map(row => ({
+    lotId: row.querySelector('[data-field="lotId"]').value,
+    reason: row.querySelector('[data-field="reason"]').value,
+    aging: row.querySelector('[data-field="aging"]').value,
+    action: row.querySelector('[data-field="action"]').value,
+    wip: row.dataset.wip || '',
+  }));
+  localStorage.setItem(storageKey(), JSON.stringify({
+    remarks: document.getElementById('remarksInput').value,
+    rows,
+    lots: pageState.lots,
+    wip: pageState.wip,
+    totalLots: pageState.totalLots,
+    totalWip: pageState.totalWip,
+  }));
+  const status = document.getElementById('saveStatus');
+  status.textContent = `Saved ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+function addDetailRow(row = {}) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'detail-row';
+  wrapper.dataset.detailRow = 'true';
+  wrapper.dataset.wip = row.wip || '';
+  wrapper.innerHTML = `
+    <input class="field" data-field="lotId" type="text" placeholder="Lot ID" value="${escapeAttribute(row.lotId || '')}">
+    <input class="field" data-field="reason" type="text" placeholder="Hold reason" value="${escapeAttribute(row.reason || '')}">
+    <input class="field" data-field="aging" type="text" placeholder="Aging" value="${escapeAttribute(row.aging || '')}">
+    <input class="field" data-field="action" type="text" placeholder="Next action / owner" value="${escapeAttribute(row.action || '')}">
+    <button class="action-btn secondary" data-remove-row type="button">Remove</button>
+  `;
+  document.getElementById('detailRows').appendChild(wrapper);
+}
+
+function escapeAttribute(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function updateSummaryCards() {
+  document.getElementById('lotsValue').textContent = pageState.lots.toLocaleString();
+  document.getElementById('wipValue').textContent = formatOnholdWip(pageState.wip);
+  const share = pageState.totalLots ? Math.round((pageState.lots / pageState.totalLots) * 100) : 0;
+  document.getElementById('shareValue').textContent = `${share}%`;
+  document.getElementById('shareText').textContent = `${pageState.lots.toLocaleString()} of ${pageState.totalLots.toLocaleString()} dashboard on-hold lots.`;
+}
+
+function applyImportedRows(rows) {
+  const ownerNeedle = pageState.owner.trim().toLowerCase();
+  const normalized = rows.map(row => ({
+    owner: String(rowValue(row, ['Owner', 'Onhold Owner', 'Responsible Owner']) || '').trim(),
+    lotId: String(rowValue(row, ['Lot ID', 'Lot', 'LotID', 'Lot Number']) || '').trim(),
+    reason: String(rowValue(row, ['Reason', 'Hold Reason', 'Onhold Reason', 'Issue']) || '').trim(),
+    aging: String(rowValue(row, ['Aging', 'Age', 'Aging Days', 'Days']) || '').trim(),
+    action: String(rowValue(row, ['Next Action', 'Action', 'Owner Action', 'Disposition']) || '').trim(),
+    wip: Number(rowValue(row, ['WIP', 'Total WIP', 'Onhold WIP'])) || 0,
+    remarks: String(rowValue(row, ['Remarks', 'Remark', 'Notes', 'Comment']) || '').trim(),
+    week: String(rowValue(row, ['Week', 'WW', 'Work Week']) || '').trim(),
+  })).filter(row => row.lotId || row.reason || row.aging || row.action || row.remarks || row.wip);
+
+  const scoped = normalized.filter(row => !row.owner || row.owner.toLowerCase() === ownerNeedle);
+  const importedRows = scoped.filter(row => row.lotId || row.reason || row.aging || row.action);
+  const importedRemarks = scoped.map(row => row.remarks).filter(Boolean);
+  if (!scoped.length) {
+    setImportStatus(`No rows matched owner ${pageState.owner}. Check the Owner column or remove it to import all rows.`);
+    return;
+  }
+
+  document.getElementById('detailRows').innerHTML = '';
+  (importedRows.length ? importedRows : [{}]).forEach(addDetailRow);
+
+  if (importedRemarks.length) {
+    document.getElementById('remarksInput').value = Array.from(new Set(importedRemarks)).join('\n');
+  }
+
+  pageState.lots = importedRows.length || scoped.length || pageState.lots;
+  const importedWip = scoped.reduce((sum, row) => sum + (Number(row.wip) || 0), 0);
+  if (importedWip > 0) pageState.wip = importedWip;
+  if (!pageState.totalLots || pageState.lots > pageState.totalLots) pageState.totalLots = pageState.lots;
+  if (!pageState.totalWip || pageState.wip > pageState.totalWip) pageState.totalWip = pageState.wip;
+  updateSummaryCards();
+  writeSavedDetails();
+  setImportStatus(`Imported ${importedRows.length || scoped.length} row${(importedRows.length || scoped.length) === 1 ? '' : 's'} for ${pageState.owner}.`);
+}
+
+function importExcelFile(file) {
+  if (!file) {
+    setImportStatus('Choose an Excel or CSV file first.');
+    return;
+  }
+  if (!window.XLSX) {
+    setImportStatus('Excel library unavailable. Check your internet connection and reload the page.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = event => {
+    try {
+      const workbook = XLSX.read(event.target.result, { type: 'array' });
+      const rows = workbook.SheetNames.flatMap(name => XLSX.utils.sheet_to_json(workbook.Sheets[name], { defval: '' }));
+      applyImportedRows(rows);
+    } catch (error) {
+      console.warn('Excel import failed', error);
+      setImportStatus('Import failed. Use .xlsx, .xls, or .csv with header columns.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadTemplate() {
+  const rows = [
+    {
+      Owner: pageState.owner,
+      'Lot ID': 'LOT-001',
+      Reason: 'SafetyNet aging',
+      Aging: '3 days',
+      'Next Action': 'QA disposition',
+      WIP: pageState.wip || '',
+      Remarks: 'Add owner notes here',
+      Week: pageState.week,
+    },
+  ];
+  if (window.XLSX) {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Onhold Details');
+    XLSX.writeFile(workbook, `post-e-onhold-${pageState.owner.replace(/[^a-z0-9]+/gi, '-')}-template.xlsx`);
+    return;
+  }
+  const headers = Object.keys(rows[0]);
+  const csv = [headers.join(','), headers.map(header => `"${String(rows[0][header] ?? '').replace(/"/g, '""')}"`).join(',')].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `post-e-onhold-${pageState.owner.replace(/[^a-z0-9]+/gi, '-')}-template.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function renderPage() {
+  document.title = `Post E | ${pageState.owner} Onhold Details`;
+  document.getElementById('weekLabel').textContent = pageState.week;
+  document.getElementById('ownerValue').textContent = pageState.owner;
+  document.getElementById('ownerSubtitle').textContent = `${pageState.owner} owner breakdown for ${pageState.week}`;
+
+  const saved = readSavedDetails();
+  if (Number.isFinite(Number(saved.lots)) && Number(saved.lots) > 0) pageState.lots = Number(saved.lots);
+  if (Number.isFinite(Number(saved.wip)) && Number(saved.wip) > 0) pageState.wip = Number(saved.wip);
+  if (Number.isFinite(Number(saved.totalLots)) && Number(saved.totalLots) > 0) pageState.totalLots = Number(saved.totalLots);
+  if (Number.isFinite(Number(saved.totalWip)) && Number(saved.totalWip) > 0) pageState.totalWip = Number(saved.totalWip);
+  updateSummaryCards();
+  document.getElementById('remarksInput').value = saved.remarks || '';
+  const rows = Array.isArray(saved.rows) && saved.rows.length ? saved.rows : [{}];
+  rows.forEach(addDetailRow);
+}
+
+document.getElementById('addRowBtn').addEventListener('click', () => addDetailRow());
+document.getElementById('toggleImportBtn').addEventListener('click', () => {
+  const shell = document.getElementById('importShell');
+  const minimized = shell.classList.toggle('minimized');
+  document.getElementById('toggleImportBtn').textContent = minimized ? 'Expand' : 'Minimize';
+});
+document.getElementById('importExcelBtn').addEventListener('click', () => importExcelFile(document.getElementById('excelInput').files[0]));
+document.getElementById('excelInput').addEventListener('change', event => importExcelFile(event.target.files[0]));
+document.getElementById('downloadTemplateBtn').addEventListener('click', downloadTemplate);
+document.getElementById('saveBtn').addEventListener('click', writeSavedDetails);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.getElementById('remarksInput').value = '';
+  document.getElementById('detailRows').innerHTML = '';
+  addDetailRow();
+  writeSavedDetails();
+});
+document.getElementById('detailRows').addEventListener('click', event => {
+  const button = event.target.closest('[data-remove-row]');
+  if (!button) return;
+  button.closest('[data-detail-row]').remove();
+  if (!document.querySelector('[data-detail-row]')) addDetailRow();
+});
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+renderPage();
+</script>
+</body>
+</html>
