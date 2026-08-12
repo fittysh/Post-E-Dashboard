@@ -3236,6 +3236,23 @@ tbody tr:hover td {
     min-width: 52px;
 }
 
+/* Balanced KPI layout after summary simplification */
+.kpi-grid {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+}
+
+@media (max-width:1100px) {
+    .kpi-grid {
+        grid-template-columns: repeat(2,minmax(0,1fr));
+    }
+}
+
+@media (max-width:560px) {
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Command-center glance animation */
 .hero-glance {
     position: absolute;
@@ -4520,11 +4537,7 @@ const App = (() => {
             metric("Resolved Issues",data.resolved,"Resolved records","text-success"),
             metric("Overdue Issues",data.overdue,"Active issues exceeding SLA","text-danger"),
             metric("Average Response",formatDuration(Math.round(data.average)),"Mean response"),
-            metric("Median Response",formatDuration(Math.round(data.median)),"50th percentile"),
-            metric("90th Percentile",formatDuration(Math.round(data.p90)),"90th percentile"),
-            metric("SLA Compliance",`${data.sla.toFixed(1)}%`,"Valid responses meeting SLA","text-success"),
-            metric("Average Resolution",formatDuration(Math.round(data.resolutionAverage)),"Average resolution"),
-            metric("Estimate Accuracy",`${data.estimateAccuracy.toFixed(1)}%`,"Completed by estimate")
+            metric("Median Response",formatDuration(Math.round(data.median)),"50th percentile")
         ].join("");
     }
 
