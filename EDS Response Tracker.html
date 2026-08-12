@@ -1457,19 +1457,6 @@ body.modal-open {
     text-transform: uppercase;
 }
 
-.metric-icon {
-    display: grid;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    color: var(--primary);
-    background: var(--surface-3);
-    border: 1px solid color-mix(in srgb,var(--primary) 14%,transparent);
-    border-radius: 8px;
-    font-size: 10px;
-    font-weight: 850;
-}
-
 .kpi-value {
     position: relative;
     z-index: 1;
@@ -2884,17 +2871,6 @@ html.dark .settings-card:hover {
     letter-spacing: .075em;
 }
 
-.metric-icon {
-    background:
-        linear-gradient(145deg,rgba(255,255,255,.38),transparent),
-        color-mix(in srgb,var(--surface-3) 70%,transparent);
-    border-color: var(--glass-line);
-    box-shadow: inset 0 1px var(--glass-inner-line),0 6px 14px rgba(55,61,102,.07);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    font-family: var(--font-ui);
-}
-
 .kpi-value {
     margin: 11px 0 5px;
     font-size: clamp(20px,1.65vw,26px);
@@ -3406,42 +3382,42 @@ tbody tr:hover td {
 
     <nav class="nav" id="navigation">
         <button class="nav-button active" data-page="overviewPage" aria-label="Overview">
-            <span class="nav-icon"><i data-lucide="layout-dashboard" aria-hidden="true">OV</i></span>
+            <span class="nav-icon"><i data-lucide="layout-dashboard" aria-hidden="true"></i></span>
             <span class="nav-label">Overview</span>
         </button>
 
         <button class="nav-button" data-page="issuesPage" aria-label="Live Issues">
-            <span class="nav-icon"><i data-lucide="list-todo" aria-hidden="true">IS</i></span>
+            <span class="nav-icon"><i data-lucide="list-todo" aria-hidden="true"></i></span>
             <span class="nav-label">Live Issues</span>
         </button>
 
         <button class="nav-button" data-page="analyticsPage" aria-label="Analytics">
-            <span class="nav-icon"><i data-lucide="bar-chart-3" aria-hidden="true">AN</i></span>
+            <span class="nav-icon"><i data-lucide="bar-chart-3" aria-hidden="true"></i></span>
             <span class="nav-label">Analytics</span>
         </button>
 
         <button class="nav-button" data-page="performancePage" aria-label="QDR Performance">
-            <span class="nav-icon"><i data-lucide="gauge" aria-hidden="true">QD</i></span>
+            <span class="nav-icon"><i data-lucide="gauge" aria-hidden="true"></i></span>
             <span class="nav-label">QDR Performance</span>
         </button>
 
         <button class="nav-button" data-page="qualityPage" aria-label="Data Quality">
-            <span class="nav-icon"><i data-lucide="shield-check" aria-hidden="true">DQ</i></span>
+            <span class="nav-icon"><i data-lucide="shield-check" aria-hidden="true"></i></span>
             <span class="nav-label">Data Quality</span>
         </button>
 
         <button class="nav-button" data-page="importPage" aria-label="Data Import">
-            <span class="nav-icon"><i data-lucide="upload" aria-hidden="true">IM</i></span>
+            <span class="nav-icon"><i data-lucide="upload" aria-hidden="true"></i></span>
             <span class="nav-label">Data Import</span>
         </button>
 
         <button class="nav-button" data-page="reportsPage" aria-label="Reports">
-            <span class="nav-icon"><i data-lucide="file-text" aria-hidden="true">RP</i></span>
+            <span class="nav-icon"><i data-lucide="file-text" aria-hidden="true"></i></span>
             <span class="nav-label">Reports</span>
         </button>
 
         <button class="nav-button" data-page="settingsPage" aria-label="Settings">
-            <span class="nav-icon"><i data-lucide="settings" aria-hidden="true">ST</i></span>
+            <span class="nav-icon"><i data-lucide="settings" aria-hidden="true"></i></span>
             <span class="nav-label">Settings</span>
         </button>
     </nav>
@@ -4522,19 +4498,10 @@ const App = (() => {
     }
 
     function metric(label,value,description,valueClass = "") {
-        const icon = label
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0,2)
-            .map(word => word[0])
-            .join("")
-            .toUpperCase();
-
         return `
             <article class="card kpi reveal" title="${escapeHtml(description)}">
                 <div class="kpi-header">
                     <span>${escapeHtml(label)}</span>
-                    <span class="metric-icon">${escapeHtml(icon)}</span>
                 </div>
                 <div class="kpi-value ${valueClass}">
                     ${escapeHtml(value)}
